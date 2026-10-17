@@ -1,5 +1,4 @@
 package com.aisafe.application.dto;
-
 public class AircraftModelUtilizationDTO {
     private String modelId;
     private String modelName;
