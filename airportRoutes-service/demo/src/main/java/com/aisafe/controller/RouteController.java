@@ -6,21 +6,13 @@ import com.aisafe.model.Route;
 import com.aisafe.model.RouteHistory;
 import com.aisafe.repository.RouteRepository;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/routes")
-@Tag(
-        name = "Flight Routes",
-        description = "Gestão de Rotas de Voo (WP#3A e WP#3B completos)"
-)
 public class RouteController {
 
     private final CreateRouteUseCase createRouteUseCase;
@@ -61,8 +53,7 @@ public class RouteController {
         this.findAlternativeRoutesUseCase = findAlternativeRoutesUseCase;
     }
 
-    @Operation(summary = "US110: Criar Rota")
-    @PreAuthorize("hasAnyRole('ATCC', 'ADMIN')") // Corrigido para ATCC (req. do PDF)
+    // US110: Criar Rota
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Route createRoute(@RequestBody CreateRouteRequest request) {
@@ -76,30 +67,26 @@ public class RouteController {
         );
     }
 
-    @Operation(summary = "US113: Obter Rota por ID")
-    @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE', 'ATCC')")
+    // US113: Obter Rota por ID
     @GetMapping("/{id}")
     public Route getRouteById(@PathVariable Long id) {
         return getRouteByIdUseCase.execute(id);
     }
 
-    @Operation(summary = "US113: Listar Rotas por Aeroporto de Origem")
-    @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE', 'ATCC')")
+    // US113: Listar Rotas por Aeroporto de Origem
     @GetMapping("/from/{iataCode}")
     public List<Route> getRoutesFromAirport(@PathVariable String iataCode) {
         return getRoutesFromAirportUseCase.execute(iataCode);
     }
 
-    @Operation(summary = "US114: Pesquisar Rotas por Origem/Destino")
-    @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE', 'ATCC')")
+    // US114: Pesquisar Rotas por Origem/Destino
     @GetMapping("/search")
     public List<Route> searchRoutes(@RequestParam(required = false) String origin,
                                     @RequestParam(required = false) String destination) {
         return searchRoutesUseCase.execute(origin, destination);
     }
 
-    @Operation(summary = "US112: Atualizar Rota")
-    @PreAuthorize("hasAnyRole('ATCC', 'BACKOFFICE', 'ADMIN')") // ATCC adicionado
+    // US112: Atualizar Rota
     @PutMapping("/{id}")
     public Route updateRoute(@PathVariable Long id,
                              @RequestBody UpdateRouteRequest request) {
@@ -112,22 +99,19 @@ public class RouteController {
         );
     }
 
-    @Operation(summary = "US112: Desativar Rota")
-    @PreAuthorize("hasAnyRole('ATCC', 'BACKOFFICE', 'ADMIN')") // ATCC adicionado
+    // US112: Desativar Rota
     @PatchMapping("/{id}/deactivate")
     public Route deactivateRoute(@PathVariable Long id) {
         return deactivateRouteUseCase.execute(id);
     }
 
-    @Operation(summary = "US111: Ver Histórico da Rota")
-    @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE', 'ATCC')")
+    // US111: Ver Histórico da Rota
     @GetMapping("/{id}/history")
     public List<RouteHistory> getRouteHistory(@PathVariable Long id) {
         return getRouteHistoryUseCase.execute(id);
     }
 
-    @Operation(summary = "US209: Consultar rotas por Aeroporto (Partida ou Chegada)")
-    @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE', 'ATCC')")
+    // US209: Consultar rotas por Aeroporto (Partida ou Chegada)
     @GetMapping("/airport/{iata}")
     public List<Route> getRoutesByAirport(@PathVariable String iata) {
         return routeRepository.findRoutesByAirport(new IataCode(iata));
@@ -137,22 +121,19 @@ public class RouteController {
     // NOVOS ENDPOINTS: US 214, 215, 216
     // ==============================================================
 
-    @Operation(summary = "US214: Listar rotas ativas ordenadas por popularidade ou distância")
-    @PreAuthorize("hasAnyRole('ATCC', 'ADMIN')")
+    // US214: Listar rotas ativas ordenadas por popularidade ou distância
     @GetMapping("/active/sorted")
     public List<Route> getActiveRoutesSorted(@RequestParam(defaultValue = "distance") String sortBy) {
         return getActiveRoutesSortedUseCase.execute(sortBy);
     }
 
-    @Operation(summary = "US215: Calcular distância total da rede de rotas")
-    @PreAuthorize("hasAnyRole('ATCC', 'ADMIN')")
+    // US215: Calcular distância total da rede de rotas
     @GetMapping("/total-distance")
     public Double getTotalNetworkDistance() {
         return calculateTotalDistanceUseCase.execute();
     }
 
-    @Operation(summary = "US216: Pesquisar rotas alternativas (com 1 escala)")
-    @PreAuthorize("hasAnyRole('ATCC', 'ADMIN')")
+    // US216: Pesquisar rotas alternativas (com 1 escala)
     @GetMapping("/alternative")
     public List<List<Route>> getAlternativeRoutes(@RequestParam String origin,
                                                   @RequestParam String destination) {
