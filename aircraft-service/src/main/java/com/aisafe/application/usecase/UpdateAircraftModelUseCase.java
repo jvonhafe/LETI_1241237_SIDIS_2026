@@ -3,7 +3,7 @@ package com.aisafe.application.usecase;
 import com.aisafe.core.exception.ResourceNotFoundException;
 import com.aisafe.model.AircraftModel;
 import com.aisafe.model.Capacity;
-import com.aisafe.model.UpdateAircraftModelDTO;
+import com.aisafe.application.dto.UpdateAircraftModelDTO;
 import com.aisafe.repository.AircraftModelRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

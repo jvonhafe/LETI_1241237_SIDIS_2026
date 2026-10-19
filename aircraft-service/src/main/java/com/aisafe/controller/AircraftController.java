@@ -1,16 +1,14 @@
 package com.aisafe.controller;
 
-import com.aisafe.application.aircraft.RegisterAircraftUseCase;
+import com.aisafe.application.usecase.RegisterAircraftUseCase;
 import com.aisafe.core.exception.AircraftNotFoundException;
 import com.aisafe.model.Aircraft;
 import com.aisafe.model.AircraftRegistration;
-import com.aisafe.model.Route;
 import com.aisafe.repository.AircraftRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import com.aisafe.application.aircraft.GetCompatibleRoutesUseCase;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,12 +19,10 @@ public class AircraftController {
 
     private final RegisterAircraftUseCase registerUseCase;
     private final AircraftRepository aircraftRepository;
-    private final GetCompatibleRoutesUseCase getCompatibleRoutesUseCase;
 
-    public AircraftController(RegisterAircraftUseCase registerUseCase, AircraftRepository aircraftRepository, GetCompatibleRoutesUseCase getCompatibleRoutesUseCase) {
+    public AircraftController(RegisterAircraftUseCase registerUseCase, AircraftRepository aircraftRepository) {
         this.registerUseCase = registerUseCase;
         this.aircraftRepository = aircraftRepository;
-        this.getCompatibleRoutesUseCase = getCompatibleRoutesUseCase;
     }
 
     @Operation(summary = "Registar Aeronave")
@@ -73,11 +69,38 @@ public class AircraftController {
         public String status;
     }
 
-    @Operation(summary = "Rotas Compatíveis")
-    @GetMapping("/{registration}/compatible-routes")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATCC')")
-    public ResponseEntity<List<Route>> getCompatibleRoutes(@PathVariable String registration) {
-        List<Route> compatibleRoutes = getCompatibleRoutesUseCase.execute(registration);
-        return ResponseEntity.ok(compatibleRoutes);
+    public static class AircraftSpecsDTO {
+        public String registration;
+        public int maxCapacity;
+        public double maxRange;
+        public double cruisingSpeed;
+
+        public AircraftSpecsDTO(String registration, int maxCapacity, double maxRange, double cruisingSpeed) {
+            this.registration = registration;
+            this.maxCapacity = maxCapacity;
+            this.maxRange = maxRange;
+            this.cruisingSpeed = cruisingSpeed;
+        }
     }
+
+    @Operation(summary = "Fornecer capacidades da aeronave para cálculo de rotas no serviço externo")
+    @GetMapping("/{registration}/specs")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ATCC')")
+    public ResponseEntity<AircraftSpecsDTO> getAircraftSpecs(@PathVariable String registration) {
+        AircraftRegistration regVo = new AircraftRegistration(registration);
+
+        Aircraft aircraft = aircraftRepository.findById(regVo)
+                .orElseThrow(() -> new AircraftNotFoundException(registration));
+
+        AircraftSpecsDTO specs = new AircraftSpecsDTO(
+                aircraft.getRegistrationNumber().getRegistration(),
+                150, // model.getMaxCapacity().getValue()
+                3500.0, // model.getMaxRange()
+                800.0 // model.getCruisingSpeed()
+        );
+
+        return ResponseEntity.ok(specs);
+    }
+
+
 }

@@ -1,7 +1,7 @@
 package com.aisafe.controller;
 
-import com.aisafe.application.maintence.CloseMaintenanceRecordUseCase;
-import com.aisafe.application.maintence.ScheduleMaintenanceUseCase;
+import com.aisafe.application.usecase.CloseMaintenanceRecordUseCase;
+import com.aisafe.application.usecase.ScheduleMaintenanceUseCase;
 import com.aisafe.model.MaintenanceComponent;
 import com.aisafe.model.MaintenanceRecord;
 import com.aisafe.service.MaintenanceService;

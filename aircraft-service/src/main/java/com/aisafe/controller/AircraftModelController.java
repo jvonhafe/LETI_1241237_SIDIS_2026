@@ -1,15 +1,15 @@
 package com.aisafe.controller;
 
-import com.aisafe.application.aircraft.RegisterAircraftModelUseCase;
-import com.aisafe.application.aircraft.UpdateAircraftModelUseCase;
-import com.aisafe.application.aircraft.GetFleetAvailabilityUseCase;
-import com.aisafe.application.aircraft.GetTop5UtilizedModelsUseCase;
-import com.aisafe.application.aircraft.CalculateFleetOperationalHoursUseCase;
+import com.aisafe.application.usecase.RegisterAircraftModelUseCase;
+import com.aisafe.application.usecase.UpdateAircraftModelUseCase;
+import com.aisafe.application.usecase.GetFleetAvailabilityUseCase;
+import com.aisafe.application.usecase.GetTop5UtilizedModelsUseCase;
+import com.aisafe.application.usecase.CalculateFleetOperationalHoursUseCase;
 import com.aisafe.model.AircraftModel;
-import com.aisafe.model.FleetAvailabilityDTO;
-import com.aisafe.model.UpdateAircraftModelDTO;
-import com.aisafe.model.AircraftModelUtilizationDTO;
-import com.aisafe.model.AircraftOperationalHoursDTO;
+import com.aisafe.application.dto.FleetAvailabilityDTO;
+import com.aisafe.application.dto.UpdateAircraftModelDTO;
+import com.aisafe.application.dto.AircraftModelUtilizationDTO;
+import com.aisafe.application.dto.AircraftOperationalHoursDTO;
 import com.aisafe.repository.AircraftModelRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
@@ -94,12 +94,14 @@ public class AircraftModelController {
         return ResponseEntity.ok(top5);
     }
 
-    @Operation(summary = "Disponibilidade da Frota")
-    @GetMapping("/fleet/availability")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATCC')")
-    public ResponseEntity<FleetAvailabilityDTO> getFleetAvailability() {
-        FleetAvailabilityDTO availability = getFleetAvailabilityUseCase.execute();
-        return ResponseEntity.ok(availability);
+    @GetMapping("/availability")
+    //@PreAuthorize("isAuthenticated()")
+    public ResponseEntity<FleetAvailabilityDTO> getFleetAvailability(
+            @RequestParam(defaultValue = "false") boolean localOnly,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) { // <-- CAPTURA O TOKEN
+
+        FleetAvailabilityDTO response = getFleetAvailabilityUseCase.execute(localOnly, authHeader);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Calcular Horas Operacionais")

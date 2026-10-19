@@ -1,7 +1,7 @@
 package com.aisafe.application.usecase;
 
 import com.aisafe.model.Aircraft;
-import com.aisafe.model.AircraftOperationalHoursDTO;
+import com.aisafe.application.dto.AircraftOperationalHoursDTO;
 import com.aisafe.repository.AircraftRepository;
 import com.aisafe.repository.MaintenanceRecordRepository;
 import org.springframework.stereotype.Service;

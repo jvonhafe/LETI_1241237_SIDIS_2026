@@ -1,4 +1,4 @@
-package com.aisafe.application.maintence;
+package com.aisafe.application.usecase;
 
 import com.aisafe.model.MaintenanceRecord;
 import com.aisafe.service.MaintenanceService;

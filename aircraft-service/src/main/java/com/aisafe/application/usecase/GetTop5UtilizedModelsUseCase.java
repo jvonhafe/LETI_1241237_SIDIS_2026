@@ -2,7 +2,7 @@ package com.aisafe.application.usecase;
 
 import com.aisafe.model.Aircraft;
 import com.aisafe.model.AircraftModel;
-import com.aisafe.model.AircraftModelUtilizationDTO;
+import com.aisafe.application.dto.AircraftModelUtilizationDTO;
 import com.aisafe.repository.AircraftModelRepository;
 import com.aisafe.repository.AircraftRepository;
 import org.springframework.stereotype.Service;
