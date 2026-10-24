@@ -1,0 +1,26 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary(api, "Airports & Routes Service") {
+    Component(airportCtrl, "AirportController", "Spring REST Controller", "Gere pedidos HTTP de aeroportos. Tenta ler localmente; se falhar, usa o RestTemplate para pedir aos vizinhos.")
+    Component(routeCtrl, "RouteController", "Spring REST Controller", "Gere os pedidos HTTP relacionados com as rotas.")
+
+    Component(restTemplate, "RestTemplateConfig", "Spring Bean", "Mecanismo HTTP cliente configurado para falar com outras instâncias.")
+
+    Component(usecases, "Use Cases", "Spring Services", "Lógica de negócio isolada (ex: RegisterAirportUseCase).")
+
+    Component(repo, "Spring Data Repositories", "JPA Repository", "Interfaces de acesso à base de dados (AirportRepository, RouteRepository).")
+}
+
+ContainerDb(db, "Airports DB", "H2 Database", "Base de dados em memória local da instância.")
+System_Ext(peerInstance, "Peer Instance (Porta 8081/8082)", "A outra instância do microsserviço a correr em simultâneo.")
+
+Rel(airportCtrl, usecases, "Usa")
+Rel(routeCtrl, usecases, "Usa")
+Rel(usecases, repo, "Lê e escreve dados via")
+Rel(repo, db, "JPA/JDBC")
+
+Rel(airportCtrl, restTemplate, "Aciona em caso de falta de dados (Forwarding)")
+Rel(restTemplate, peerInstance, "HTTP GET /api/airports/{iata}", "JSON")
+
+@enduml
