@@ -1,19 +1,19 @@
 @startuml
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
-Person(user, "Administrador / ATCC", "Gere aeroportos e rotas.")
+title Diagrama de Contentores (Nível 2) - Serviço de Aeroportos
 
-System_Boundary(platform, "AISafe Platform") {
-    Container(airportRoutesService, "Airports & Routes Service", "Java, Spring Boot", "Gere as rotas, aeroportos e lógica de encaminhamento (Portas 8081/8082).")
-    Container(aircraftService, "Aircraft Service", "Java, Spring Boot", "Gere o catálogo de aeronaves e disponibilidade da frota.")
+Person(admin, "Administrador", "Gere o sistema de rotas e aeroportos")
 
-    ContainerDb(dbAirports, "Airports DB", "H2 Database", "Armazena dados locais de aeroportos e rotas.")
-    ContainerDb(dbAircraft, "Aircraft DB", "H2 Database", "Armazena dados locais de aeronaves.")
+System_Boundary(airport_system, "Sistema de Aeroportos") {
+    Container(api, "API Application", "Java, Spring Boot", "Disponibiliza os endpoints REST, faz forwarding e orquestra a lógica de negócio")
+    ContainerDb(db, "Database", "H2 Database", "Armazena a informação persistente dos aeroportos")
 }
 
-Rel(user, airportRoutesService, "Faz pedidos de gestão de rotas e aeroportos", "JSON/HTTPS")
-Rel(user, aircraftService, "Faz pedidos de gestão de frota", "JSON/HTTPS")
+System_Ext(rabbitmq, "Message Broker", "RabbitMQ", "Gere filas de mensagens assíncronas")
 
-Rel(airportRoutesService, dbAirports, "Lê e escreve dados em", "JPA/JDBC")
-Rel(aircraftService, dbAircraft, "Lê e escreve dados em", "JPA/JDBC")
+Rel(admin, api, "Faz pedidos HTTP", "REST/JSON")
+Rel(api, db, "Lê e escreve dados", "JDBC/JPA")
+Rel(api, rabbitmq, "Publica eventos (produtor)", "AMQP")
+Rel(rabbitmq, api, "Consome eventos (consumidor)", "AMQP")
 @enduml

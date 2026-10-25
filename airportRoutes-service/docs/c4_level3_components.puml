@@ -1,26 +1,25 @@
 @startuml
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
-Container_Boundary(api, "Airports & Routes Service") {
-    Component(airportCtrl, "AirportController", "Spring REST Controller", "Gere pedidos HTTP de aeroportos. Tenta ler localmente; se falhar, usa o RestTemplate para pedir aos vizinhos.")
-    Component(routeCtrl, "RouteController", "Spring REST Controller", "Gere os pedidos HTTP relacionados com as rotas.")
+title Diagrama de Componentes (Nível 3) - API Application
 
-    Component(restTemplate, "RestTemplateConfig", "Spring Bean", "Mecanismo HTTP cliente configurado para falar com outras instâncias.")
+ContainerDb(db, "Database", "H2 Database", "Armazena aeroportos")
+System_Ext(rabbitmq, "Message Broker", "RabbitMQ", "Fila: hello-queue")
 
-    Component(usecases, "Use Cases", "Spring Services", "Lógica de negócio isolada (ex: RegisterAirportUseCase).")
+Container_Boundary(api, "API Application") {
+    Component(controller, "AirportController", "Spring RestController", "Gere endpoints HTTP e reencaminhamento (Forwarding)")
+    Component(usecases, "Use Cases (Services)", "Spring Service", "Executa a lógica de registo e atualização")
+    Component(repo, "AirportRepository", "Spring Data JPA", "Interface de acesso à BD")
 
-    Component(repo, "Spring Data Repositories", "JPA Repository", "Interfaces de acesso à base de dados (AirportRepository, RouteRepository).")
+    Component(producer, "HelloProducer", "Spring Component", "Converte e envia mensagens para a fila")
+    Component(consumer, "HelloConsumer", "RabbitListener", "Ouve e processa mensagens que chegam da fila")
 }
 
-ContainerDb(db, "Airports DB", "H2 Database", "Base de dados em memória local da instância.")
-System_Ext(peerInstance, "Peer Instance (Porta 8081/8082)", "A outra instância do microsserviço a correr em simultâneo.")
+Rel(controller, usecases, "Usa")
+Rel(controller, producer, "Dispara evento de criação")
+Rel(usecases, repo, "Lê/Escreve")
+Rel(repo, db, "SQL/JDBC")
 
-Rel(airportCtrl, usecases, "Usa")
-Rel(routeCtrl, usecases, "Usa")
-Rel(usecases, repo, "Lê e escreve dados via")
-Rel(repo, db, "JPA/JDBC")
-
-Rel(airportCtrl, restTemplate, "Aciona em caso de falta de dados (Forwarding)")
-Rel(restTemplate, peerInstance, "HTTP GET /api/airports/{iata}", "JSON")
-
+Rel(producer, rabbitmq, "Publica mensagens", "AMQP")
+Rel(rabbitmq, consumer, "Entrega mensagens", "AMQP")
 @enduml
