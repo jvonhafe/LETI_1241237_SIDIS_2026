@@ -1,0 +1,19 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Diagrama de Contentores (Nível 2) - Serviço de Aeroportos
+
+Person(admin, "Administrador", "Gere o sistema de rotas e aeroportos")
+
+System_Boundary(airport_system, "Sistema de Aeroportos") {
+    Container(api, "API Application", "Java, Spring Boot", "Disponibiliza os endpoints REST, faz forwarding e orquestra a lógica de negócio")
+    ContainerDb(db, "Database", "H2 Database", "Armazena a informação persistente dos aeroportos")
+}
+
+System_Ext(rabbitmq, "Message Broker", "RabbitMQ", "Gere filas de mensagens assíncronas")
+
+Rel(admin, api, "Faz pedidos HTTP", "REST/JSON")
+Rel(api, db, "Lê e escreve dados", "JDBC/JPA")
+Rel(api, rabbitmq, "Publica eventos (produtor)", "AMQP")
+Rel(rabbitmq, api, "Consome eventos (consumidor)", "AMQP")
+@enduml

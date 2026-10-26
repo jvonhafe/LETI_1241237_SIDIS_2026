@@ -1,0 +1,25 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Diagrama de Componentes (Nível 3) - API Application
+
+ContainerDb(db, "Database", "H2 Database", "Armazena aeroportos")
+System_Ext(rabbitmq, "Message Broker", "RabbitMQ", "Fila: hello-queue")
+
+Container_Boundary(api, "API Application") {
+    Component(controller, "AirportController", "Spring RestController", "Gere endpoints HTTP e reencaminhamento (Forwarding)")
+    Component(usecases, "Use Cases (Services)", "Spring Service", "Executa a lógica de registo e atualização")
+    Component(repo, "AirportRepository", "Spring Data JPA", "Interface de acesso à BD")
+
+    Component(producer, "HelloProducer", "Spring Component", "Converte e envia mensagens para a fila")
+    Component(consumer, "HelloConsumer", "RabbitListener", "Ouve e processa mensagens que chegam da fila")
+}
+
+Rel(controller, usecases, "Usa")
+Rel(controller, producer, "Dispara evento de criação")
+Rel(usecases, repo, "Lê/Escreve")
+Rel(repo, db, "SQL/JDBC")
+
+Rel(producer, rabbitmq, "Publica mensagens", "AMQP")
+Rel(rabbitmq, consumer, "Entrega mensagens", "AMQP")
+@enduml

@@ -8,6 +8,7 @@ import com.aisafe.model.Airport;
 import com.aisafe.model.BusiestAirportDto;
 import com.aisafe.model.IataCode;
 import com.aisafe.repository.AirportRepository;
+import com.aisafe.messaging.HelloProducer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
@@ -30,6 +31,9 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RestController
 @RequestMapping("/api/airports")
 public class AirportController {
+
+    @Autowired
+    private HelloProducer helloProducer;
 
     @Autowired
     private RegisterAirportUseCase registerAirportUseCase;
@@ -56,18 +60,22 @@ public class AirportController {
     // Lista estática de vizinhos (peers)
     private final List<String> peers = List.of("8081", "8082");
 
-    // US106: Registar (Simples)
+    //US106:registar (simples)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Airport createAirport(@RequestBody Airport airport) {
-        return registerAirportUseCase.execute(airport);
+        Airport savedAirport = registerAirportUseCase.execute(airport);
+        helloProducer.sendMessage("Novo aeroporto criado (Simples): " + savedAirport.getIataCode().getCode());
+        return savedAirport;
     }
 
     // US207: Registar Aeroporto Detalhado (Com Fotos e Instalações)
     @PostMapping("/detailed")
     @ResponseStatus(HttpStatus.CREATED)
     public Airport createDetailedAirport(@RequestBody RegisterDetailedAirportUseCase.DetailedAirportDto request) {
-        return registerDetailedAirportUseCase.execute(request);
+        Airport savedAirport = registerDetailedAirportUseCase.execute(request);
+        helloProducer.sendMessage("Novo aeroporto criado (Detalhado): " + savedAirport.getIataCode().getCode());
+        return savedAirport;
     }
 
     // US107: Obter por ID (COM FORWARDING)

@@ -1,0 +1,31 @@
+@startuml
+actor Client
+participant "Instância 2 (8082)\nAirportController" as Inst2
+participant "Instância 2 (8082)\nAirportRepository" as Repo2
+participant "Instância 1 (8081)\nAirportController" as Inst1
+participant "Instância 1 (8081)\nAirportRepository" as Repo1
+
+Client -> Inst2: GET /api/airports/OPO
+activate Inst2
+
+Inst2 -> Repo2: findById("OPO")
+activate Repo2
+Repo2 --> Inst2: Optional.empty()
+deactivate Repo2
+
+note right of Inst2: Aeroporto não encontrado localmente.\nInicia mecanismo de HTTP Forwarding.
+
+Inst2 -> Inst1: GET /api/airports/OPO\n(Header: X-Forwarded=true)
+activate Inst1
+
+Inst1 -> Repo1: findById("OPO")
+activate Repo1
+Repo1 --> Inst1: Airport("OPO", "Porto", ...)
+deactivate Repo1
+
+Inst1 --> Inst2: 200 OK (JSON)
+deactivate Inst1
+
+Inst2 --> Client: 200 OK (JSON)
+deactivate Inst2
+@enduml
