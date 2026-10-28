@@ -9,13 +9,11 @@ public class ScheduleMaintenanceUseCase {
 
     private final MaintenanceRecordRepository recordRepository;
 
-    // Apenas o repositório é necessário aqui
     public ScheduleMaintenanceUseCase(MaintenanceRecordRepository recordRepository) {
         this.recordRepository = recordRepository;
     }
 
     public MaintenanceRecord execute(MaintenanceRecord record) {
-        // Agora, como não chamamos o maintenanceService, o erro de NullPointerException desaparece
         return recordRepository.save(record);
     }
 }
