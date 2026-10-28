@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.aisafe.controller.ScheduledFlightControllerTest
+-------------------------------------------------------------------------------
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.94 s -- in com.aisafe.controller.ScheduledFlightControllerTest

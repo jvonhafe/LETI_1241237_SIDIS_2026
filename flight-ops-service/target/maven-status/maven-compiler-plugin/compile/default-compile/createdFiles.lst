@@ -1,0 +1,9 @@
+com\aisafe\core\security\SecurityConfig.class
+com\aisafe\repository\ScheduledFlightRepository.class
+com\aisafe\controller\ScheduledFlightController.class
+com\aisafe\core\security\JwtService.class
+com\aisafe\core\security\JwtAuthenticationFilter.class
+com\aisafe\config\RestTemplateConfig.class
+com\aisafe\exception\GlobalExceptionHandler.class
+com\aisafe\FlightOpsApplication.class
+com\aisafe\model\ScheduledFlight.class
