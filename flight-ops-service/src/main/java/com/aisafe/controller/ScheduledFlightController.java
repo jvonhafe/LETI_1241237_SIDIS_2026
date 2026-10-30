@@ -3,6 +3,7 @@ package com.aisafe.controller;
 import com.aisafe.model.ScheduledFlight;
 import com.aisafe.repository.ScheduledFlightRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -11,6 +12,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/flights")
+@PreAuthorize("hasAnyRole('ADMIN', 'ATCC')")
 public class ScheduledFlightController {
 
     private final ScheduledFlightRepository flightRepository;
