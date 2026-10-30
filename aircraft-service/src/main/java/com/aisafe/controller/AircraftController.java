@@ -34,7 +34,7 @@ public class AircraftController {
 
     @Operation(summary = "Obter Detalhes da Aeronave")
     @GetMapping("/{registration}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE', 'ATCC')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE', 'ATCC', 'SERVICE')")
     public Aircraft getAircraftDetails(@PathVariable String registration) {
         AircraftRegistration regVo = new AircraftRegistration(registration);
         return aircraftRepository.findById(regVo)
@@ -85,7 +85,7 @@ public class AircraftController {
 
     @Operation(summary = "Fornecer capacidades da aeronave para cálculo de rotas no serviço externo")
     @GetMapping("/{registration}/specs")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATCC')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE', 'ATCC', 'SERVICE')")
     public ResponseEntity<AircraftSpecsDTO> getAircraftSpecs(@PathVariable String registration) {
         AircraftRegistration regVo = new AircraftRegistration(registration);
 

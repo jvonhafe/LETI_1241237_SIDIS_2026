@@ -31,7 +31,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/airports")
-@PreAuthorize("hasAnyRole('ADMIN', 'ATCC', 'BACKOFFICE')")
+@PreAuthorize("hasAnyRole('ADMIN', 'ATCC', 'BACKOFFICE', 'SERVICE')")
 public class AirportController {
 
     @Autowired
