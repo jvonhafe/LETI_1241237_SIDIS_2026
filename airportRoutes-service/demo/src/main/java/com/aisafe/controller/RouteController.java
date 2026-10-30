@@ -7,12 +7,14 @@ import com.aisafe.model.RouteHistory;
 import com.aisafe.repository.RouteRepository;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/routes")
+@PreAuthorize("hasAnyRole('ADMIN', 'ATCC')")
 public class RouteController {
 
     private final CreateRouteUseCase createRouteUseCase;
@@ -87,6 +89,7 @@ public class RouteController {
     }
 
     // US112: Atualizar Rota
+    @PreAuthorize("hasAnyRole('ADMIN', 'ATCC', 'BACKOFFICE')")
     @PutMapping("/{id}")
     public Route updateRoute(@PathVariable Long id,
                              @RequestBody UpdateRouteRequest request) {
@@ -100,6 +103,7 @@ public class RouteController {
     }
 
     // US112: Desativar Rota
+    @PreAuthorize("hasAnyRole('ADMIN', 'ATCC', 'BACKOFFICE')")
     @PatchMapping("/{id}/deactivate")
     public Route deactivateRoute(@PathVariable Long id) {
         return deactivateRouteUseCase.execute(id);
