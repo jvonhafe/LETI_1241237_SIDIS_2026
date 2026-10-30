@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(
@@ -23,6 +24,7 @@ public class MaintenanceTemplateController {
     }
 
     @Operation(summary = "Criar Template de Manutenção")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MAINTENANCE_TECH')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public MaintenanceTemplate createTemplate(@Valid @RequestBody MaintenanceTemplate template) {
