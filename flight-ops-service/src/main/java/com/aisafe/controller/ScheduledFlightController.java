@@ -2,6 +2,9 @@ package com.aisafe.controller;
 
 import com.aisafe.model.ScheduledFlight;
 import com.aisafe.repository.ScheduledFlightRepository;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -21,20 +24,17 @@ public class ScheduledFlightController {
         this.restTemplate = restTemplate;
     }
 
-    // 1. Criar um Voo novo (POST)
     @PostMapping
     public ResponseEntity<ScheduledFlight> createFlight(@RequestBody ScheduledFlight flight) {
         ScheduledFlight savedFlight = flightRepository.save(flight);
         return ResponseEntity.ok(savedFlight);
     }
 
-    // 2. Listar todos os voos (GET)
     @GetMapping
     public List<ScheduledFlight> getAllFlights() {
         return flightRepository.findAll();
     }
 
-    // 3. Consultar um voo específico por número (GET)
     @GetMapping("/{flightNumber}")
     public ResponseEntity<ScheduledFlight> getFlightByNumber(@PathVariable String flightNumber) {
         ScheduledFlight flight = flightRepository.findById(flightNumber)
@@ -42,7 +42,6 @@ public class ScheduledFlightController {
         return ResponseEntity.ok(flight);
     }
 
-    // 4. Atualizar um voo existente (PUT)
     @PutMapping("/{flightNumber}")
     public ResponseEntity<ScheduledFlight> updateFlight(@PathVariable String flightNumber, @RequestBody ScheduledFlight updatedFlight) {
         ScheduledFlight flight = flightRepository.findById(flightNumber)
@@ -59,7 +58,6 @@ public class ScheduledFlightController {
         return ResponseEntity.ok(saved);
     }
 
-    // 5. Apagar um voo (DELETE)
     @DeleteMapping("/{flightNumber}")
     public ResponseEntity<Void> deleteFlight(@PathVariable String flightNumber) {
         if (!flightRepository.existsById(flightNumber)) {
@@ -69,17 +67,32 @@ public class ScheduledFlightController {
         return ResponseEntity.noContent().build();
     }
 
-    // 6. A AGREGAÇÃO: Ver o Voo e ir buscar os dados da Aeronave ao aircraft-service (Porta 8081)
     @GetMapping("/{flightNumber}/details")
-    public ResponseEntity<Map<String, Object>> getFlightWithAircraftDetails(@PathVariable String flightNumber) {
+    public ResponseEntity<?> getFlightWithAircraftDetails(
+            @PathVariable String flightNumber,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
         ScheduledFlight flight = flightRepository.findById(flightNumber)
                 .orElseThrow(() -> new RuntimeException("Voo não encontrado: " + flightNumber));
 
         String aircraftServiceUrl = "http://localhost:8081/api/aircraft/" + flight.getAircraftId();
 
-        Object aircraftDetails = null;
+        Object aircraftDetails;
         try {
-            aircraftDetails = restTemplate.getForObject(aircraftServiceUrl, Object.class);
+            HttpHeaders headers = new HttpHeaders();
+            if (authHeader != null) {
+                headers.set("Authorization", authHeader);
+            }
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<Object> aircraftResponse = restTemplate.exchange(
+                    aircraftServiceUrl,
+                    HttpMethod.GET,
+                    entity,
+                    Object.class
+            );
+            aircraftDetails = aircraftResponse.getBody();
+
         } catch (Exception e) {
             aircraftDetails = "Erro ao contactar o aircraft-service: " + e.getMessage();
         }
