@@ -57,7 +57,6 @@ public class AirportController {
     @Value("${server.port}")
     private String serverPort;
 
-    // Lista estática de vizinhos (peers)
     private final List<String> peers = List.of("8081", "8082");
 
     //US106:registar (simples)
