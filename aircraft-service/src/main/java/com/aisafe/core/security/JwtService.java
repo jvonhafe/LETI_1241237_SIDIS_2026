@@ -12,7 +12,7 @@ import java.util.Base64;
 public class JwtService {
 
     private static final String SECRET = "aisafe-secret-key-2026";
-    private static final long EXPIRATION = 1000 * 60 * 60 * 24;
+    private static final long EXPIRATION = 1000L * 60 * 60 * 24;
 
     public String generateToken(UserDetails userDetails) {
         long expirationTime = System.currentTimeMillis() + EXPIRATION;
