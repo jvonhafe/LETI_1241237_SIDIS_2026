@@ -1,0 +1,54 @@
+@startuml
+autonumber
+
+
+actor "Backoffice Operator" as Admin
+participant "AirportController" as Ctrl
+participant "RegisterDetailedAirportUseCase" as UC <<Use Case>>
+participant "IataCode" as IATA <<Value Object>>
+participant "Airport" as Domain <<Aggregate Root>>
+participant "AirportRepository" as Repo
+database "Base de Dados" as DB
+
+Admin -> Ctrl : POST /api/airports/detailed \n {dados completos}
+activate Ctrl
+
+note right of Ctrl: O Controller passa o DTO/Objeto\npara o Use Case lidar com o negócio
+Ctrl -> UC : execute(airportDto)
+activate UC
+
+note right of UC: 1. Validação Fail-Fast do IATA
+UC -> IATA ** : create(airportDto.iata)
+
+note right of UC: 2. Criação do Agregado Principal
+UC -> Domain ** : create(iataCode, name, city...)
+activate Domain
+Domain --> UC : airport
+deactivate Domain
+
+note right of UC: 3. Adiciona as Instalações (Loop)
+loop para cada facility no DTO
+    UC -> Domain : addFacility(type, capacity, desc)
+end
+
+note right of UC: 4. Adiciona as Fotos (Loop)
+loop para cada image no DTO
+    UC -> Domain : addImage(url, description)
+end
+
+note right of UC: 5. Persistência de tudo junto
+UC -> Repo : save(airport)
+activate Repo
+Repo -> DB : INSERT INTO airport... (e tabelas associadas)
+activate DB
+DB --> Repo : OK
+deactivate DB
+Repo --> UC : airportSaved
+deactivate Repo
+
+UC --> Ctrl : airportSaved
+deactivate UC
+
+Ctrl --> Admin : 201 Created (Airport Data)
+deactivate Ctrl
+@enduml

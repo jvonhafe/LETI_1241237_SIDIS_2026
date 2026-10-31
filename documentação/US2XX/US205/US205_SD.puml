@@ -1,0 +1,32 @@
+@startuml
+autonumber
+actor "Backoffice User" as Admin
+participant "AircraftController" as Ctrl
+participant "GetFleetAvailabilityUseCase" as UseCase
+participant "AircraftRepository" as Repo
+participant "dto : FleetAvailabilityDTO" as DTO
+
+activate Admin
+Admin -> Ctrl: GET /api/aircraft/fleet/availability
+activate Ctrl
+
+Ctrl -> UseCase: execute()
+activate UseCase
+
+UseCase -> Repo: findAll()
+activate Repo
+Repo --> UseCase: allAircraft
+deactivate Repo
+
+note right of UseCase: Conta os aviões AVAILABLE/OPERATIONAL,\nconta os MAINTENANCE e calcula a taxa.
+
+create DTO
+UseCase -> DTO: new FleetAvailabilityDTO(total, available, maintenance, rate, detailsList)
+
+UseCase --> Ctrl: availabilityDTO
+deactivate UseCase
+
+Ctrl --> Admin: 200 OK (FleetAvailabilityDTO)
+deactivate Ctrl
+deactivate Admin
+@enduml

@@ -1,0 +1,12 @@
+@startuml
+autonumber
+actor "Backoffice User" as Admin
+participant "Sistema Aisafe" as System
+
+activate Admin
+Admin -> System: Regista um novo modelo de aeronave enviando os dados e o URL da imagem (opcional)
+activate System
+System --> Admin: Confirma a criação do modelo e devolve a estrutura com o diagrama técnico guardado
+deactivate System
+deactivate Admin
+@enduml

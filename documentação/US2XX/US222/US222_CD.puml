@@ -1,0 +1,19 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+class MaintenanceRecordController <<RestController>> {
+    + getMaintenanceAlerts(): ResponseEntity
+}
+
+class MaintenanceQueryService <<Service>> {
+    + getMaintenanceAlerts(): List
+}
+
+interface MaintenanceRecordRepository <<Repository>> {
+    + findMaintenanceAlerts(): List
+}
+
+MaintenanceRecordController "1" --> "1" MaintenanceQueryService : uses >
+MaintenanceQueryService "1" --> "1" MaintenanceRecordRepository : fetches >
+@enduml

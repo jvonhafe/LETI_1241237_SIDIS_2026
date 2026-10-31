@@ -1,0 +1,7 @@
+@startuml
+autonumber
+actor "User" as User
+participant "AISafe System" as System
+User -> System : Solicita alertas de manutenção pendente
+System --> User : Devolve lista de alertas
+@enduml

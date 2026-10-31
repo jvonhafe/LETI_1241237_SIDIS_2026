@@ -1,0 +1,27 @@
+@startuml
+autonumber
+
+actor "Backoffice Operator" as Admin
+participant "AirportController" as Ctrl
+participant "AirportRepository" as Repo
+database "Base de Dados" as DB
+
+Admin -> Ctrl : GET /api/airports/statistics/busiest?limit={N}
+activate Ctrl
+
+note right of Ctrl: CQRS: Como é uma consulta estatística,\no Controller interroga o Repository diretamente.
+Ctrl -> Repo : findBusiestAirports(limit)
+activate Repo
+
+note right of Repo: Executa uma query de agregação\n(ex: SELECT iata, COUNT(routes) \nGROUP BY iata ORDER BY count DESC)
+Repo -> DB : SELECT ... GROUP BY ... ORDER BY ... LIMIT ?
+activate DB
+DB --> Repo : List<BusiestAirportDto>
+deactivate DB
+
+Repo --> Ctrl : List<BusiestAirportDto>
+deactivate Repo
+
+Ctrl --> Admin : 200 OK (Estatísticas dos Aeroportos)
+deactivate Ctrl
+@enduml

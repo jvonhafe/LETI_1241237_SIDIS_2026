@@ -1,0 +1,36 @@
+@startuml
+class AircraftController {
+  + getOperationalHours(): ResponseEntity<List<AircraftOperationalHoursDTO>>
+}
+
+class CalculateFleetOperationalHoursUseCase {
+  + execute(): List<AircraftOperationalHoursDTO>
+}
+
+interface AircraftRepository {
+  + findAll(): List<Aircraft>
+}
+
+interface MaintenanceRecordRepository {
+  + totalMaintenanceHoursByAircraft(registration: String): Double
+}
+
+class Aircraft {
+  - registrationNumber: AircraftRegistration
+  - modelId: String
+  - manufacturingDate: LocalDate
+}
+
+class AircraftOperationalHoursDTO {
+  - registrationNumber: String
+  - modelId: String
+  - totalOperationalHours: double
+}
+
+AircraftController --> CalculateFleetOperationalHoursUseCase : uses
+AircraftController ..> AircraftOperationalHoursDTO : returns
+CalculateFleetOperationalHoursUseCase --> AircraftRepository : uses
+CalculateFleetOperationalHoursUseCase --> MaintenanceRecordRepository : uses
+CalculateFleetOperationalHoursUseCase ..> AircraftOperationalHoursDTO : creates
+AircraftRepository --> Aircraft : stores
+@enduml

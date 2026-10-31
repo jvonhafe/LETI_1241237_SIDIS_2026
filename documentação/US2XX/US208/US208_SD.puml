@@ -1,0 +1,55 @@
+@startuml
+autonumber
+
+
+actor "Backoffice Operator" as Admin
+participant "AirportController" as Ctrl
+participant "UpdateAirportDetailsUseCase" as UC <<Use Case>>
+participant "IataCode" as IATA <<Value Object>>
+participant "AirportRepository" as Repo
+participant "Airport" as Domain <<Aggregate Root>>
+database "Base de Dados" as DB
+
+Admin -> Ctrl : PATCH /api/airports/{iata}/details \n {contacts, hours}
+activate Ctrl
+
+note right of Ctrl: O Controller passa a responsabilidade\npara o Use Case (Comando/Escrita)
+Ctrl -> UC : execute(iata, contactsDto, hoursDto)
+activate UC
+
+UC -> IATA ** : create(iata)
+UC -> Repo : findById(iataCode)
+activate Repo
+Repo -> DB : SELECT * FROM airport WHERE iata_code = ?
+activate DB
+DB --> Repo : Airport Record
+deactivate DB
+Repo --> UC : airport
+deactivate Repo
+
+note right of UC: O Use Case orquestra a alteração\ndos Value Objects no Agregado
+UC -> Domain : updateContactInfo(newContacts)
+activate Domain
+Domain --> UC : ok
+deactivate Domain
+
+UC -> Domain : updateOperatingHours(newHours)
+activate Domain
+Domain --> UC : ok
+deactivate Domain
+
+UC -> Repo : save(airport)
+activate Repo
+Repo -> DB : UPDATE airport SET ...
+activate DB
+DB --> Repo : OK
+deactivate DB
+Repo --> UC : airportUpdated
+deactivate Repo
+
+UC --> Ctrl : airportUpdated
+deactivate UC
+
+Ctrl --> Admin : 200 OK (Airport Data Atualizada)
+deactivate Ctrl
+@enduml

@@ -1,0 +1,34 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "Backoffice Operator" as User
+participant "AircraftController" as Ctrl
+participant "AircraftModelRepository" as ModelRepo
+participant "AircraftRepository" as AircraftRepo
+database "Base de Dados" as DB
+
+User -> Ctrl : POST /api/aircraft (Aircraft Data)
+activate Ctrl
+
+Ctrl -> ModelRepo : existsById(aircraft.getModelId())
+activate ModelRepo
+ModelRepo -> DB : SELECT (procura por ModelID)
+activate DB
+DB --> ModelRepo : true (existe)
+deactivate DB
+ModelRepo --> Ctrl : true
+deactivate ModelRepo
+
+Ctrl -> AircraftRepo : save(aircraft)
+activate AircraftRepo
+AircraftRepo -> DB : INSERT (guarda aeronave física)
+activate DB
+DB --> AircraftRepo : success
+deactivate DB
+AircraftRepo --> Ctrl : savedAircraft
+deactivate AircraftRepo
+
+Ctrl --> User : Created (Aircraft)
+deactivate Ctrl
+@enduml

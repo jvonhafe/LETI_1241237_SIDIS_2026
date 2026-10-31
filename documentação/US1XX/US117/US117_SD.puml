@@ -1,0 +1,29 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "ATCC" as User
+participant "MaintenanceRecordController" as Ctrl
+participant "MaintenanceService" as Service
+participant "MaintenanceRecordRepository" as RecordRepo
+database "Base de Dados" as DB
+
+User -> Ctrl : GET /api/maintenance-records/fleet/hours
+activate Ctrl
+
+Ctrl -> Service : totalHoursForFleet()
+activate Service
+
+Service -> RecordRepo : totalMaintenanceHoursForFleet()
+activate RecordRepo
+RecordRepo -> DB : SELECT total maintenance hours
+DB --> RecordRepo : totalHours
+RecordRepo --> Service : totalHours
+deactivate RecordRepo
+
+Service --> Ctrl : totalHours
+deactivate Service
+
+Ctrl --> User : OK (totalMaintenanceHours)
+deactivate Ctrl
+@enduml

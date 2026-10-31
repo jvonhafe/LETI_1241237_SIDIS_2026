@@ -1,0 +1,12 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "Backoffice Operator" as User
+participant "System" as Sys
+
+User -> Sys : Atualiza o estado operacional de uma aeronave específica
+activate Sys
+Sys --> User : Confirma a alteração e devolve os dados atualizados (OK)
+deactivate Sys
+@enduml

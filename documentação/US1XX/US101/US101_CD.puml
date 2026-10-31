@@ -1,0 +1,30 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "US101 - Registar Modelo de Aeronave" {
+
+    class AircraftModelController <<RestController>> {
+      + registerModel(model: AircraftModel): AircraftModel
+    }
+
+    interface AircraftModelRepository <<Repository>> {
+      + save(model: AircraftModel): AircraftModel
+    }
+
+    class AircraftModel <<Entity>> {
+      - modelId: String
+      - modelName: String
+      - manufacturer: String
+      - maxCapacity: int
+      - fuelCapacity: double
+      - maxRange: double
+      - cruisingSpeed: double
+      + getModelId(): String
+    }
+
+    AircraftModelController "1" --> "1" AircraftModelRepository : uses >
+    AircraftModelController ..> AircraftModel : handles >
+    AircraftModelRepository ..> AircraftModel : stores >
+}
+@enduml

@@ -1,0 +1,45 @@
+@startuml
+skinparam classAttributeIconSize 0
+hide empty methods
+hide empty attributes
+title Domain Model - Aircraft
+
+
+    class Aircraft <<Aggregate Root>> {
+        - totalFlightHours : Integer
+    }
+
+    class AircraftRegistration <<Value Object>> {
+        - code : String
+    }
+
+    enum AircraftStatus <<Value Object>> {
+        ACTIVE
+        INACTIVE
+        IN_MAINTENANCE
+        RETIRED
+    }
+
+    class AircraftModel <<Entity>> {
+        - manufacturer : String
+        - maxRange : Integer
+        - maxWeight : Integer
+    }
+
+    class ModelId <<Value Object>> {
+        - id : String
+    }
+
+    class Capacity <<Value Object>> {
+        - maxSeats : Integer
+    }
+
+    ' Relacionamentos
+    Aircraft "1" -right-> "1" AircraftRegistration : identified by >
+    Aircraft "1" --> "1" AircraftStatus : has >
+    Aircraft "*" --> "1" AircraftModel : is of type >
+
+    AircraftModel "1" -right-> "1" ModelId : identified by >
+    AircraftModel "1" --> "1" Capacity : has >
+
+@enduml

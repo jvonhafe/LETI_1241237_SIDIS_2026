@@ -1,0 +1,33 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "US116 - Ver Registos de Manutenção de uma Aeronave" {
+
+    class MaintenanceRecordController <<RestController>> {
+      + recordsForAircraft(registration: String): List<MaintenanceRecord>
+    }
+
+    class MaintenanceService <<Service>> {
+      + recordsForAircraft(registration: String): List<MaintenanceRecord>
+    }
+
+    interface AircraftRepository <<Repository>> {
+      + existsById(id: String): boolean
+    }
+
+    interface MaintenanceRecordRepository <<Repository>> {
+      + findByAircraftRegistration(registration: String): List<MaintenanceRecord>
+    }
+
+    class MaintenanceRecord <<Entity>> {
+      - aircraftRegistration: String
+    }
+
+    MaintenanceRecordController "1" --> "1" MaintenanceService : uses >
+    MaintenanceService "1" --> "1" AircraftRepository : uses >
+    MaintenanceService "1" --> "1" MaintenanceRecordRepository : uses >
+
+    MaintenanceRecordRepository ..> MaintenanceRecord : returns >
+}
+@enduml

@@ -1,0 +1,20 @@
+@startuml
+autonumber
+actor "Operator" as Op
+participant "MaintenanceController" as Ctrl
+participant "ScheduleMaintenanceUseCase" as UseCase
+participant "MaintenanceRecordRepository" as Repo
+
+Op -> Ctrl : POST /api/maintenance (JSON com componente)
+activate Ctrl
+Ctrl -> UseCase : execute(record)
+activate UseCase
+UseCase -> Repo : save(record)
+activate Repo
+Repo --> UseCase : savedRecord
+deactivate Repo
+UseCase --> Ctrl : savedRecord
+deactivate UseCase
+Ctrl --> Op : 201 Created
+deactivate Ctrl
+@enduml

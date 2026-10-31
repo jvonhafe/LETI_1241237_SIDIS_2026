@@ -1,0 +1,15 @@
+@startuml
+autonumber
+
+
+actor "Backoffice Operator" as Admin
+participant "AISafe System" as System
+
+activate Admin
+Admin -> System : Solicita as estatísticas dos aeroportos mais movimentados
+activate System
+
+System --> Admin : Devolve a lista de aeroportos e o respetivo número de rotas associadas
+deactivate System
+deactivate Admin
+@enduml

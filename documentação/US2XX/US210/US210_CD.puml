@@ -1,0 +1,22 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+    class AirportController <<RestController>> {
+      + getBusiestAirports(limit: int): ResponseEntity
+    }
+
+    interface AirportRepository <<Repository>> {
+      + findBusiestAirports(limit: int): List<BusiestAirportDto>
+    }
+
+    class BusiestAirportDto <<DTO>> {
+      - airportIata: String
+      - airportName: String
+      - totalRoutes: int
+    }
+
+    AirportController "1" --> "1" AirportRepository : uses >
+    AirportController ..> BusiestAirportDto : handles >
+    AirportRepository ..> BusiestAirportDto : retrieves >
+
+@enduml

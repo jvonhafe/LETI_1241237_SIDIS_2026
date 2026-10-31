@@ -1,0 +1,37 @@
+@startuml
+autonumber
+skinparam maxMessageSize 150
+
+actor "ATCC Operator" as ATCC
+participant "RouteController" as Ctrl
+participant "IataCode" as IATA <<Value Object>>
+participant "RouteRepository" as Repo
+database "Base de Dados" as DB
+
+ATCC -> Ctrl : GET /api/routes?airport={iata}
+activate Ctrl
+
+note right of Ctrl: 1. Validação Fail-Fast do IATA
+Ctrl -> IATA ** : create(iata)
+activate IATA
+IATA --> Ctrl : airportIata
+deactivate IATA
+
+note right of Ctrl: 2. CQRS: O Controller interroga o Repository\ndiretamente sem Use Case intermediário.
+Ctrl -> Repo : findRoutesByOriginOrDestination(airportIata)
+activate Repo
+
+Repo -> DB : SELECT * FROM routes \n WHERE origin_id = ? OR destination_id = ?
+activate DB
+DB --> Repo : List<Route> Record
+deactivate DB
+
+Repo --> Ctrl : List<Route>
+deactivate Repo
+
+note right of Ctrl: 3. (Opcional) O Controller converte para \nCollectionModel e adiciona links HATEOAS
+Ctrl -> Ctrl : CollectionModel.of(routes...)
+
+Ctrl --> ATCC : 200 OK (Lista de Rotas)
+deactivate Ctrl
+@enduml

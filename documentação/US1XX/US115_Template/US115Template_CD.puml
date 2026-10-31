@@ -1,0 +1,29 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "US115 - Criar Template de Manutenção" {
+
+    class MaintenanceTemplateController <<RestController>> {
+      + createTemplate(template: MaintenanceTemplate): MaintenanceTemplate
+    }
+
+    class MaintenanceService <<Service>> {
+      + createTemplate(template: MaintenanceTemplate): MaintenanceTemplate
+    }
+
+    interface MaintenanceTemplateRepository <<Repository>> {
+      + save(template: MaintenanceTemplate): MaintenanceTemplate
+    }
+
+    class MaintenanceTemplate <<Entity>> {
+      - checklist: List<String>
+    }
+
+    MaintenanceTemplateController "1" --> "1" MaintenanceService : uses >
+    MaintenanceService "1" --> "1" MaintenanceTemplateRepository : uses >
+
+    MaintenanceTemplateController ..> MaintenanceTemplate : handles >
+    MaintenanceTemplateRepository ..> MaintenanceTemplate : stores >
+}
+@enduml

@@ -1,0 +1,17 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "ATCC / Backoffice Operator" as User
+participant "System" as Sys
+
+User -> Sys : Solicita atualização de uma rota (routeId, novos dados)
+activate Sys
+Sys --> User : Confirma atualização da rota
+deactivate Sys
+
+User -> Sys : Solicita desativação de uma rota (routeId)
+activate Sys
+Sys --> User : Confirma desativação da rota
+deactivate Sys
+@enduml

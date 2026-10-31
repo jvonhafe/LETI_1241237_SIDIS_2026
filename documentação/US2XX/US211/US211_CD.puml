@@ -1,0 +1,23 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+    class AirportController <<RestController>> {
+      + getAirportsGrouped(groupBy: String): ResponseEntity
+    }
+
+    interface AirportRepository <<Repository>> {
+      + findAll(): List<Airport>
+    }
+
+    class Airport <<Aggregate Root>> {
+      - name: String
+      - city: String
+      - country: String
+      - timezone: String
+    }
+
+    AirportController "1" --> "1" AirportRepository : uses >
+    AirportController ..> Airport : handles & groups >
+    AirportRepository ..> Airport : retrieves >
+@enduml

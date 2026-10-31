@@ -1,0 +1,24 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "User/Operator" as User
+participant "AircraftController" as Ctrl
+participant "AircraftRepository" as Repo
+database "Base de Dados" as DB
+
+User -> Ctrl : GET /api/aircraft/search (modelId, status, year)
+activate Ctrl
+
+Ctrl -> Repo : searchAircrafts(modelId, status, year)
+activate Repo
+Repo -> DB : SELECT com filtros dinâmicos
+activate DB
+DB --> Repo : lista de aeronaves filtradas
+deactivate DB
+Repo --> Ctrl : List<Aircraft>
+deactivate Repo
+
+Ctrl --> User : OK (List<Aircraft>)
+deactivate Ctrl
+@enduml

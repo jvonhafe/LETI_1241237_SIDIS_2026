@@ -1,0 +1,12 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "ATCC" as User
+participant "System" as Sys
+
+User -> Sys : Consulta histórico de uma rota (routeId)
+activate Sys
+Sys --> User : Devolve lista de alterações da rota
+deactivate Sys
+@enduml

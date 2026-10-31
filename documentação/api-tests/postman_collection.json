@@ -1,0 +1,205 @@
+﻿{
+  "info": {
+    "name": "LETI_SIDIS_2026 - Master Collection",
+    "description": "Coleção com todas as US dos 3 microsserviços. JWT injetado automaticamente.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "aircraft_url", "value": "http://localhost:8081/api", "type": "string" },
+    { "key": "routes_url", "value": "http://localhost:8082/api", "type": "string" },
+    { "key": "flight_ops_url", "value": "http://localhost:8083/api", "type": "string" },
+    { "key": "jwt_token", "value": "", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [ { "key": "token", "value": "{{jwt_token}}", "type": "string" } ]
+  },
+  "item": [
+    {
+      "name": "1. Auth (Porta 8081)",
+      "item": [
+        {
+          "name": "Login Automático",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    pm.collectionVariables.set(\"jwt_token\", pm.response.json().token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n    \"username\": \"admin\",\n    \"password\": \"admin123\"\n}" },
+            "url": { "raw": "{{aircraft_url}}/auth/login", "host": ["{{aircraft_url}}"], "path": ["auth", "login"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Aircraft Models & Fleet (Porta 8081)",
+      "item": [
+        {
+          "name": "Registar Modelo",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"modelId\": \"A320\",\n  \"modelName\": \"Airbus A320\",\n  \"maxCapacity\": 180\n}" },
+            "url": { "raw": "{{aircraft_url}}/aircraft-models", "host": ["{{aircraft_url}}"], "path": ["aircraft-models"] }
+          }
+        },
+        {
+          "name": "Atualizar Modelo",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"maxCapacity\": 200\n}" },
+            "url": { "raw": "{{aircraft_url}}/aircraft-models/A320", "host": ["{{aircraft_url}}"], "path": ["aircraft-models", "A320"] }
+          }
+        },
+        {
+          "name": "Registar Aeronave",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"registrationNumber\": \"CS-TTO\",\n  \"modelId\": \"A320\"\n}" },
+            "url": { "raw": "{{aircraft_url}}/aircraft", "host": ["{{aircraft_url}}"], "path": ["aircraft"] }
+          }
+        },
+        {
+          "name": "Obter Aeronave",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{aircraft_url}}/aircraft/CS-TTO", "host": ["{{aircraft_url}}"], "path": ["aircraft", "CS-TTO"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Maintenance (Porta 8081)",
+      "item": [
+        {
+          "name": "Criar Maintenance Template",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Revisão Geral\",\n  \"description\": \"Inspeção de rotina A\"\n}" },
+            "url": { "raw": "{{aircraft_url}}/maintenance-templates", "host": ["{{aircraft_url}}"], "path": ["maintenance-templates"] }
+          }
+        },
+        {
+          "name": "Criar Maintenance Record",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"aircraftRegistration\": \"CS-TTO\",\n  \"templateId\": 1\n}" },
+            "url": { "raw": "{{aircraft_url}}/maintenance-records", "host": ["{{aircraft_url}}"], "path": ["maintenance-records"] }
+          }
+        },
+        {
+          "name": "Listar Registos Aeronave",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{aircraft_url}}/maintenance-records/aircraft/CS-TTO", "host": ["{{aircraft_url}}"], "path": ["maintenance-records", "aircraft", "CS-TTO"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Airport Routes (Porta 8082/8080)",
+      "item": [
+        {
+          "name": "Registar Aeroporto",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n    \"iataCode\": \"OPO\",\n    \"city\": \"Porto\"\n}" },
+            "url": { "raw": "{{routes_url}}/airports", "host": ["{{routes_url}}"], "path": ["airports"] }
+          }
+        },
+        {
+          "name": "Criar Rota",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"originAirport\": \"OPO\",\n  \"destinationAirport\": \"LIS\"\n}" },
+            "url": { "raw": "{{routes_url}}/routes", "host": ["{{routes_url}}"], "path": ["routes"] }
+          }
+        },
+        {
+          "name": "Atualizar Rota",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"distanceKm\": 300\n}" },
+            "url": { "raw": "{{routes_url}}/routes/1", "host": ["{{routes_url}}"], "path": ["routes", "1"] }
+          }
+        },
+        {
+          "name": "Histórico de Rota",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{routes_url}}/routes/1/history", "host": ["{{routes_url}}"], "path": ["routes", "1", "history"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Flight Operations (Porta 8083)",
+      "item": [
+        {
+          "name": "1. Criar Voo",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"flightNumber\": \"TP123\",\n  \"aircraftId\": \"CS-TTO\",\n  \"originAirportId\": \"OPO\",\n  \"destinationAirportId\": \"LIS\"\n}" },
+            "url": { "raw": "{{flight_ops_url}}/flights", "host": ["{{flight_ops_url}}"], "path": ["flights"] }
+          }
+        },
+        {
+          "name": "2. Listar Todos os Voos",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{flight_ops_url}}/flights", "host": ["{{flight_ops_url}}"], "path": ["flights"] }
+          }
+        },
+        {
+          "name": "3. Obter Voo Específico",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{flight_ops_url}}/flights/TP123", "host": ["{{flight_ops_url}}"], "path": ["flights", "TP123"] }
+          }
+        },
+        {
+          "name": "4. Atualizar Voo",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"aircraftId\": \"CS-TTO\",\n  \"status\": \"DELAYED\"\n}" },
+            "url": { "raw": "{{flight_ops_url}}/flights/TP123", "host": ["{{flight_ops_url}}"], "path": ["flights", "TP123"] }
+          }
+        },
+        {
+          "name": "5. Apagar Voo",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{flight_ops_url}}/flights/TP123", "host": ["{{flight_ops_url}}"], "path": ["flights", "TP123"] }
+          }
+        },
+        {
+          "name": "6. AGREGAÇÃO (GET Detalhes do Voo)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{flight_ops_url}}/flights/TP123/details", "host": ["{{flight_ops_url}}"], "path": ["flights", "TP123", "details"] }
+          }
+        }
+      ]
+    }
+  ]
+}

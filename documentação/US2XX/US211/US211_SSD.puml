@@ -1,0 +1,14 @@
+@startuml
+autonumber
+
+actor "ATCC Operator" as ATCC
+participant "AISafe System" as System
+
+activate ATCC
+ATCC -> System : Solicita a lista de aeroportos agrupados\npor país (ou região)
+activate System
+
+System --> ATCC : Devolve a lista de aeroportos agrupados
+deactivate System
+deactivate ATCC
+@enduml

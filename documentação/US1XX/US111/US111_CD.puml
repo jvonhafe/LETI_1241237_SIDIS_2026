@@ -1,0 +1,44 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "US111 - Consultar Histórico da Rota" {
+
+    class RouteController <<RestController>> {
+      + getRouteHistory(id: Long): List<RouteHistory>
+    }
+
+    class RouteService <<Service>> {
+      + getRouteHistory(routeId: Long): List<RouteHistory>
+      + getRouteById(id: Long): Route
+    }
+
+    interface RouteRepository <<Repository>> {
+      + findById(id: Long): Optional<Route>
+    }
+
+    interface RouteHistoryRepository <<Repository>> {
+      + findByRouteId(routeId: Long): List<RouteHistory>
+    }
+
+    class Route <<Entity>> {
+      - id: Long
+      - status: RouteStatus
+    }
+
+    class RouteHistory <<Entity>> {
+      - id: Long
+      - route: Route
+      - action: String
+      - description: String
+      - timestamp: LocalDateTime
+    }
+
+    RouteController "1" --> "1" RouteService : uses >
+    RouteService "1" --> "1" RouteRepository : uses >
+    RouteService "1" --> "1" RouteHistoryRepository : uses >
+    RouteRepository ..> Route : retrieves >
+    RouteHistoryRepository ..> RouteHistory : retrieves >
+    RouteHistory "*" --> "1" Route : belongs to >
+}
+@enduml

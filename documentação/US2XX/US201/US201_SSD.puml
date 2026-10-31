@@ -1,0 +1,12 @@
+@startuml
+autonumber
+actor "Backoffice User" as Admin
+participant "Sistema Aisafe" as System
+
+activate Admin
+Admin -> System: Inicia a atualização das especificações de um modelo
+activate System
+System --> Admin: Confirma o sucesso da atualização e devolve os novos dados do modelo
+deactivate System
+deactivate Admin
+@enduml
