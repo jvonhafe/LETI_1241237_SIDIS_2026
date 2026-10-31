@@ -1,0 +1,33 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "US102 - Registar Instância de Aeronave" {
+
+    class AircraftController <<RestController>> {
+      + registerAircraft(aircraft: Aircraft): Aircraft
+    }
+
+    interface AircraftRepository <<Repository>> {
+      + save(aircraft: Aircraft): Aircraft
+    }
+
+    interface AircraftModelRepository <<Repository>> {
+      + existsById(id: String): boolean
+    }
+
+    class Aircraft <<Entity>> {
+      - registrationNumber: String
+      - modelId: String
+      - manufacturingDate: LocalDate
+      - status: String
+      - version: Long
+      + getModelId(): String
+    }
+
+    AircraftController "1" --> "1" AircraftRepository : uses >
+    AircraftController "1" --> "1" AircraftModelRepository : uses >
+    AircraftController ..> Aircraft : handles >
+    AircraftRepository ..> Aircraft : stores >
+}
+@enduml

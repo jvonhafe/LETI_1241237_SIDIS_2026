@@ -1,0 +1,12 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "Maintenance Technician" as User
+participant "System" as Sys
+
+User -> Sys : Marca um registo de manutenção como concluído
+activate Sys
+Sys --> User : Confirma a conclusão e devolve o registo atualizado
+deactivate Sys
+@enduml

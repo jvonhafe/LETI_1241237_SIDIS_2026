@@ -1,0 +1,12 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "ATCC" as User
+participant "System" as Sys
+
+User -> Sys : Pesquisa aeroportos inserindo o nome da cidade
+activate Sys
+Sys --> User : Devolve a lista de aeroportos correspondentes
+deactivate Sys
+@enduml

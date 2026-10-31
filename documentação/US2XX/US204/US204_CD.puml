@@ -1,0 +1,43 @@
+@startuml
+class AircraftModelController {
+  + getTop5MostUtilized(): ResponseEntity<List<AircraftModelUtilizationDTO>>
+}
+
+class GetTop5UtilizedModelsUseCase {
+  + execute(): List<AircraftModelUtilizationDTO>
+}
+
+interface AircraftRepository {
+  + findAll(): List<Aircraft>
+}
+
+interface AircraftModelRepository {
+  + findAll(): List<AircraftModel>
+}
+
+class Aircraft {
+  - registrationNumber: AircraftRegistration
+  - modelId: String
+}
+
+class AircraftModel {
+  - modelId: String
+  - modelName: String
+  - manufacturer: String
+}
+
+class AircraftModelUtilizationDTO {
+  - modelId: String
+  - modelName: String
+  - manufacturer: String
+  - totalFlightHours: double
+}
+
+AircraftModelController --> GetTop5UtilizedModelsUseCase : uses
+AircraftModelController ..> AircraftModelUtilizationDTO : returns
+GetTop5UtilizedModelsUseCase --> AircraftRepository : uses
+GetTop5UtilizedModelsUseCase --> AircraftModelRepository : uses
+GetTop5UtilizedModelsUseCase ..> AircraftModelUtilizationDTO : creates
+AircraftRepository --> Aircraft : stores
+AircraftModelRepository --> AircraftModel : stores
+@enduml

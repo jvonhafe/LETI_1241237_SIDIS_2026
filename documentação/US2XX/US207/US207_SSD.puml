@@ -1,0 +1,15 @@
+@startuml
+autonumber
+
+
+actor "Backoffice Operator" as Admin
+participant "AISafe System" as System
+
+activate Admin
+Admin -> System : Regista um novo aeroporto detalhado \n(incluindo IATA, fotos, terminais e serviços)
+activate System
+
+System --> Admin : Valida os dados, cria o aeroporto com \nas fotos e instalações, e confirma o registo (201 Created)
+deactivate System
+deactivate Admin
+@enduml

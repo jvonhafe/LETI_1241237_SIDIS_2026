@@ -1,0 +1,47 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "US119 - Completar Registo de Manutenção" {
+
+    class MaintenanceRecordController <<RestController>> {
+      + completeRecord(recordId: String, request: CompleteMaintenanceRequest): MaintenanceRecord
+    }
+
+    class CompleteMaintenanceRequest {
+      - completionNotes: String
+    }
+
+    class MaintenanceService <<Service>> {
+      + completeRecord(recordId: String, completionNotes: String): MaintenanceRecord
+    }
+
+    interface MaintenanceRecordRepository <<Repository>> {
+      + findById(id: String): Optional<MaintenanceRecord>
+      + save(record: MaintenanceRecord): MaintenanceRecord
+    }
+
+    interface AircraftRepository <<Repository>> {
+      + findById(id: String): Optional<Aircraft>
+      + save(aircraft: Aircraft): Aircraft
+    }
+
+    class MaintenanceRecord <<Entity>> {
+      - aircraftRegistration: String
+      - completionNotes: String
+    }
+
+    class Aircraft <<Entity>> {
+      - status: String
+    }
+
+    MaintenanceRecordController "1" --> "1" MaintenanceService : uses >
+    MaintenanceRecordController ..> CompleteMaintenanceRequest : receives >
+
+    MaintenanceService "1" --> "1" MaintenanceRecordRepository : uses >
+    MaintenanceService "1" --> "1" AircraftRepository : uses >
+
+    MaintenanceRecordRepository ..> MaintenanceRecord : stores >
+    AircraftRepository ..> Aircraft : updates >
+}
+@enduml

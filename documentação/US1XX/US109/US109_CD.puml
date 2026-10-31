@@ -1,0 +1,45 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "US109 - Atualizar Estado do Aeroporto" {
+
+    class AirportController <<RestController>> {
+      + updateAirportStatus(iata: String, status: String): ResponseEntity
+    }
+
+    class UpdateAirportStatusUseCase <<UseCase>> {
+      + execute(iata: String, newStatus: String): Airport
+    }
+
+    interface AirportRepository <<Repository>> {
+      + findById(iata: IataCode): Optional<Airport>
+      + save(airport: Airport): Airport
+    }
+
+    class Airport <<Aggregate Root>> {
+      - name: String
+      - city: String
+      - country: String
+      - timezone: String
+      - status: String
+      + updateStatus(newStatus: String): void
+      - validateStatusTransition(): void
+    }
+
+    class IataCode <<Value Object>> {
+      - code: String
+      + IataCode(code: String)
+      + getCode(): String
+    }
+
+    ' Relacionamentos
+    AirportController "1" --> "1" UpdateAirportStatusUseCase : delegates to >
+    UpdateAirportStatusUseCase "1" --> "1" AirportRepository : uses >
+
+    UpdateAirportStatusUseCase ..> Airport : retrieves & updates >
+    UpdateAirportStatusUseCase ..> IataCode : creates >
+
+    Airport "1" *-- "1" IataCode : identified by >
+}
+@enduml

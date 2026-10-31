@@ -1,0 +1,59 @@
+@startuml
+skinparam packageStyle rectangle
+skinparam hide empty members
+
+
+
+    class Airport <<aggregate root>> {
+        - name : String
+    }
+
+    class AirportCode <<value object>> {
+        - code : String
+    }
+
+    class Location <<value object>> {
+        - city : String
+        - country : String
+        - latitude : double
+        - longitude : double
+    }
+
+    class Timezone <<value object>>
+
+    class AirportType <<value object>> {
+        - type : String
+    }
+
+    class AirportStatus <<value object>>
+
+    class Runway <<entity>> {
+        - designatorName : String
+        - length : double
+        - orientation : String
+    }
+
+    class AircraftCertification <<entity>> {
+        - validFrom : LocalDate
+        - validTo : LocalDate
+    }
+
+    class MediaImage <<entity>> {
+        - imageUrl : String
+        - description : String
+    }
+
+    ' Relações de Composição do Agregado
+    Airport "1" *-- "1" AirportCode
+    Airport "1" *-- "1" Location
+    Airport "1" *-- "1" Timezone
+    Airport "1" *-- "1" AirportType
+    Airport "1" *-- "1" AirportStatus
+    Airport "1" *-- "1..*" Runway
+    Airport "1" *-- "1..*" AircraftCertification
+    Airport "1" *-- "0..*" MediaImage
+
+    ' Relação externa para outro agregado
+    AircraftCertification "1" --> "1" AircraftModelId : appliesToModel
+
+@enduml

@@ -1,0 +1,53 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "US114 - Pesquisar Rotas" {
+
+    class RouteController <<RestController>> {
+      + searchRoutes(origin: String, destination: String): List<Route>
+    }
+
+    class RouteService <<Service>> {
+      + searchRoutes(originCode: String, destinationCode: String): List<Route>
+    }
+
+    interface RouteRepository <<Repository>> {
+      + findByOriginAirport(originAirport: Airport): List<Route>
+      + findByDestinationAirport(destinationAirport: Airport): List<Route>
+      + findByOriginAirportAndDestinationAirport(originAirport: Airport, destinationAirport: Airport): List<Route>
+      + findAll(): List<Route>
+    }
+
+    interface AirportRepository <<Repository>> {
+      + findById(iataCode: String): Optional<Airport>
+    }
+
+    class Route <<Entity>> {
+      - id: Long
+      - originAirport: Airport
+      - destinationAirport: Airport
+      - estimatedFlightTimeMinutes: Integer
+      - minimumRange: Integer
+      - minimumCapacity: Integer
+      - status: RouteStatus
+    }
+
+    class Airport <<Entity>> {
+      - iataCode: String
+      - name: String
+      - city: String
+      - country: String
+      - timezone: String
+      - status: String
+    }
+
+    RouteController "1" --> "1" RouteService : uses >
+    RouteService "1" --> "1" RouteRepository : uses >
+    RouteService "1" --> "1" AirportRepository : uses >
+    RouteRepository ..> Route : retrieves >
+    AirportRepository ..> Airport : retrieves >
+    Route "1" --> "1" Airport : origin >
+    Route "1" --> "1" Airport : destination >
+}
+@enduml

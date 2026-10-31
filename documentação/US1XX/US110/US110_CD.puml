@@ -1,0 +1,73 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "US110 - Criar Rota de Voo" {
+
+    class RouteController <<RestController>> {
+      + createRoute(request: CreateRouteRequest): Route
+    }
+
+    class RouteService <<Service>> {
+      + createRoute(originCode: String, destinationCode: String, estimatedFlightTimeMinutes: Integer, minimumRange: Integer, minimumCapacity: Integer): Route
+    }
+
+    interface AirportRepository <<Repository>> {
+      + findById(iataCode: String): Optional<Airport>
+    }
+
+    interface RouteRepository <<Repository>> {
+      + existsByOriginAirportAndDestinationAirportAndStatus(origin: Airport, destination: Airport, status: RouteStatus): boolean
+      + save(route: Route): Route
+    }
+
+    interface RouteHistoryRepository <<Repository>> {
+      + save(history: RouteHistory): RouteHistory
+    }
+
+    class Route <<Entity>> {
+      - id: Long
+      - originAirport: Airport
+      - destinationAirport: Airport
+      - estimatedFlightTimeMinutes: Integer
+      - minimumRange: Integer
+      - minimumCapacity: Integer
+      - status: RouteStatus
+    }
+
+    class Airport <<Entity>> {
+      - iataCode: String
+      - name: String
+      - city: String
+      - country: String
+      - timezone: String
+      - status: String
+    }
+
+    class RouteHistory <<Entity>> {
+      - id: Long
+      - route: Route
+      - action: String
+      - description: String
+    }
+
+    enum RouteStatus {
+      ACTIVE
+      DEACTIVATED
+    }
+
+    RouteController "1" --> "1" RouteService : uses >
+    RouteService "1" --> "1" AirportRepository : uses >
+    RouteService "1" --> "1" RouteRepository : uses >
+    RouteService "1" --> "1" RouteHistoryRepository : uses >
+
+    RouteRepository ..> Route : stores >
+    AirportRepository ..> Airport : retrieves >
+    RouteHistoryRepository ..> RouteHistory : stores >
+
+    Route "1" --> "1" Airport : origin >
+    Route "1" --> "1" Airport : destination >
+    RouteHistory "*" --> "1" Route : belongs to >
+    Route --> RouteStatus : has >
+}
+@enduml

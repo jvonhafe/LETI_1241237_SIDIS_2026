@@ -1,0 +1,25 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+class MaintenanceRecordController <<RestController>> {
+    + searchRecords(aircraft, component, pageable): ResponseEntity
+}
+
+class MaintenanceQueryService <<Service>> {
+    + searchRecords(criteria, pageable): Page
+}
+
+interface MaintenanceRecordRepository <<Repository>> {
+    + searchRecords(criteria, pageable): Page
+}
+
+class MaintenanceRecord <<Aggregate Root>> {
+    - aircraftRegistration: String
+    - component: String
+}
+
+MaintenanceRecordController "1" --> "1" MaintenanceQueryService : uses >
+MaintenanceQueryService "1" --> "1" MaintenanceRecordRepository : queries >
+MaintenanceRecordRepository ..> MaintenanceRecord : retrieves >
+@enduml

@@ -1,0 +1,28 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "US108 - Pesquisar Aeroportos (Filtros)" {
+
+    class AirportController <<RestController>> {
+      + searchAirports(city: String, country: String, name: String): ResponseEntity
+    }
+
+    interface AirportRepository <<Repository>> {
+      + searchAirports(city: String, country: String, name: String): List<Airport>
+    }
+
+    class Airport <<Aggregate Root>> {
+      - name: String
+      - city: String
+      - country: String
+      - timezone: String
+      - status: String
+      + getIataCode(): IataCode
+    }
+
+    AirportController "1" --> "1" AirportRepository : uses >
+    AirportController ..> Airport : handles >
+    AirportRepository ..> Airport : retrieves >
+}
+@enduml

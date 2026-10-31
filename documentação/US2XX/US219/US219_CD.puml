@@ -1,0 +1,19 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+class MaintenanceRecordController <<RestController>> {
+    + getOngoingActivities(pageable): ResponseEntity
+}
+
+class MaintenanceQueryService <<Service>> {
+    + getOngoingActivities(pageable): Page
+}
+
+interface MaintenanceRecordRepository <<Repository>> {
+    + findByStatus(status: String, pageable): Page
+}
+
+MaintenanceRecordController "1" --> "1" MaintenanceQueryService : uses >
+MaintenanceQueryService "1" --> "1" MaintenanceRecordRepository : retrieves >
+@enduml

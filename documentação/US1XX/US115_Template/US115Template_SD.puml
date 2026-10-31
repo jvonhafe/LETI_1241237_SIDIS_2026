@@ -1,0 +1,29 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "Maintenance Technician" as User
+participant "MaintenanceTemplateController" as Ctrl
+participant "MaintenanceService" as Service
+participant "MaintenanceTemplateRepository" as Repo
+database "Base de Dados" as DB
+
+User -> Ctrl : POST /api/maintenance-templates (MaintenanceTemplate)
+activate Ctrl
+
+Ctrl -> Service : createTemplate(template)
+activate Service
+
+Service -> Repo : save(template)
+activate Repo
+Repo -> DB : INSERT maintenance template
+DB --> Repo : success
+Repo --> Service : savedTemplate
+deactivate Repo
+
+Service --> Ctrl : savedTemplate
+deactivate Service
+
+Ctrl --> User : Created (MaintenanceTemplate)
+deactivate Ctrl
+@enduml

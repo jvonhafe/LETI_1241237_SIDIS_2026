@@ -1,0 +1,40 @@
+@startuml
+autonumber
+actor "Backoffice User" as Admin
+participant "AircraftModelController" as Ctrl
+participant "GetTop5UtilizedModelsUseCase" as UseCase
+participant "AircraftRepository" as AircraftRepo
+participant "AircraftModelRepository" as ModelRepo
+participant "dto : AircraftModelUtilizationDTO" as DTO
+
+activate Admin
+Admin -> Ctrl: GET /api/aircraft-models/top5
+activate Ctrl
+
+Ctrl -> UseCase: execute()
+activate UseCase
+
+UseCase -> AircraftRepo: findAll()
+activate AircraftRepo
+AircraftRepo --> UseCase: allAircraft
+deactivate AircraftRepo
+
+UseCase -> ModelRepo: findAll()
+activate ModelRepo
+ModelRepo --> UseCase: allModels
+deactivate ModelRepo
+
+note right of UseCase: Agrupa as horas por modelId,\nordena do maior para o menor\ne limita aos 5 primeiros.
+
+loop Para cada um dos 5 modelos mais usados
+    create DTO
+    UseCase -> DTO: new AircraftModelUtilizationDTO(modelId, name, manufacturer, totalHours)
+end
+
+UseCase --> Ctrl: top5List
+deactivate UseCase
+
+Ctrl --> Admin: 200 OK (List<AircraftModelUtilizationDTO>)
+deactivate Ctrl
+deactivate Admin
+@enduml

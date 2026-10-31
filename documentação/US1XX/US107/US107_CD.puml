@@ -1,0 +1,36 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "US107 - Detalhes do Aeroporto (Por IATA)" {
+
+    class AirportController <<RestController>> {
+      + getAirportByIata(iata: String): ResponseEntity
+    }
+
+    interface AirportRepository <<Repository>> {
+      + findById(iata: IataCode): Optional<Airport>
+    }
+
+    class Airport <<Aggregate Root>> {
+      - name: String
+      - city: String
+      - country: String
+      - timezone: String
+      - status: String
+      + getIataCode(): IataCode
+    }
+
+    class IataCode <<Value Object>> {
+      - code: String
+      + IataCode(code: String)
+      + getCode(): String
+    }
+
+    AirportController "1" --> "1" AirportRepository : uses >
+    AirportController ..> IataCode : creates >
+    AirportController ..> Airport : handles >
+    AirportRepository ..> Airport : retrieves >
+    Airport "1" *-- "1" IataCode : identified by >
+}
+@enduml

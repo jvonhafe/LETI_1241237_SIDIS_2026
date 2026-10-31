@@ -1,0 +1,7 @@
+@startuml
+autonumber
+actor "User" as User
+participant "AISafe System" as System
+User -> System : Solicita atividades em curso (IN_PROGRESS)
+System --> User : Devolve lista paginada
+@enduml

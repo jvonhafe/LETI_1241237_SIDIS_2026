@@ -1,0 +1,14 @@
+@startuml
+autonumber
+
+actor "Backoffice Operator" as Admin
+participant "AISafe System" as System
+
+activate Admin
+Admin -> System : Inicia a atualização dos detalhes de um aeroporto (IATA, contactos, horários)
+activate System
+
+System --> Admin : Valida os dados, atualiza a informação e confirma o sucesso
+deactivate System
+deactivate Admin
+@enduml

@@ -1,0 +1,12 @@
+@startuml
+autonumber
+actor "Backoffice User" as Admin
+participant "Sistema Aisafe" as System
+
+activate Admin
+Admin -> System: Solicita o Top 5 dos modelos de aeronaves mais utilizados
+activate System
+System --> Admin: Devolve a lista com o Top 5 de modelos e o respetivo total de horas operacionais
+deactivate System
+deactivate Admin
+@enduml

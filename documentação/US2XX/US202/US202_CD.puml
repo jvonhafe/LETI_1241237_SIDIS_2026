@@ -1,0 +1,45 @@
+@startuml
+class AircraftModelController {
+  + registerModel(dto: AircraftModelDTO): AircraftModel
+}
+
+class RegisterAircraftModelUseCase {
+  + execute(..., imageUrl: String, imageDescription: String): AircraftModel
+}
+
+interface AircraftModelRepository {
+  + save(model: AircraftModel): AircraftModel
+}
+
+class AircraftModel {
+  - modelId: String
+  - modelName: String
+  - image: MediaImage
+}
+
+class MediaImage {
+  - id: Long
+  - imageUrl: String
+  - description: String
+}
+
+class AircraftModelDTO {
+  + modelId: String
+  + modelName: String
+  + image: ImageDTO
+}
+
+class ImageDTO {
+  + imageUrl: String
+  + description: String
+}
+
+AircraftModelController --> RegisterAircraftModelUseCase : uses
+AircraftModelController ..> AircraftModelDTO : receives
+AircraftModelDTO *-- ImageDTO : contains
+RegisterAircraftModelUseCase --> AircraftModelRepository : uses
+RegisterAircraftModelUseCase ..> AircraftModel : creates
+RegisterAircraftModelUseCase ..> MediaImage : creates
+AircraftModel "1" *-- "0..1" MediaImage : has
+AircraftModelRepository --> AircraftModel : stores
+@enduml

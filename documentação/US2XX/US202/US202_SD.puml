@@ -1,0 +1,37 @@
+@startuml
+autonumber
+actor "Backoffice User" as Admin
+participant "AircraftModelController" as Ctrl
+participant "RegisterAircraftModelUseCase" as UseCase
+participant "model : AircraftModel" as Model
+participant "image : MediaImage" as Image
+participant "AircraftModelRepository" as Repo
+
+activate Admin
+Admin -> Ctrl: POST /api/aircraft-models (AircraftModelDTO c/ ImageDTO)
+activate Ctrl
+
+Ctrl -> UseCase: execute(..., url, description)
+activate UseCase
+
+create Model
+UseCase -> Model: new AircraftModel(...)
+
+opt Se imageUrl for enviada
+    create Image
+    UseCase -> Image: new MediaImage(url, description)
+    UseCase -> Model: setImage(image)
+end
+
+UseCase -> Repo: save(model)
+activate Repo
+Repo --> UseCase: savedModel
+deactivate Repo
+
+UseCase --> Ctrl: savedModel
+deactivate UseCase
+
+Ctrl --> Admin: 201 Created (AircraftModel)
+deactivate Ctrl
+deactivate Admin
+@enduml

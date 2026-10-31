@@ -1,0 +1,25 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "US103 - Visualizar Detalhes da Aeronave" {
+
+    class AircraftController <<RestController>> {
+      + getAircraftDetails(registration: String): Aircraft
+    }
+
+    interface AircraftRepository <<Repository>> {
+      + findById(id: String): Optional<Aircraft>
+    }
+
+    class Aircraft <<Entity>> {
+      - registrationNumber: String
+      - modelId: String
+      - manufacturingDate: LocalDate
+      - status: String
+    }
+
+    AircraftController "1" --> "1" AircraftRepository : uses >
+    AircraftController ..> Aircraft : handles >
+}
+@enduml

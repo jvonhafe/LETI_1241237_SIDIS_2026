@@ -1,0 +1,12 @@
+@startuml
+autonumber
+actor "ATCC" as ATCCUser
+participant "Sistema Aisafe" as System
+
+activate ATCCUser
+ATCCUser -> System: Pede para calcular o total de horas operacionais de cada aeronave
+activate System
+System --> ATCCUser: Devolve a lista de aeronaves com o cálculo das respetivas horas operacionais
+deactivate System
+deactivate ATCCUser
+@enduml

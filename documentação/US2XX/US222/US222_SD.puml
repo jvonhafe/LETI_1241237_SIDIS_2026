@@ -1,0 +1,20 @@
+@startuml
+autonumber
+actor "User" as User
+participant "MaintenanceController" as Ctrl
+participant "QueryService" as Service
+participant "Repository" as Repo
+
+User -> Ctrl : GET /api/maintenance/alerts
+activate Ctrl
+Ctrl -> Service : getMaintenanceAlerts()
+activate Service
+Service -> Repo : findMaintenanceAlerts()
+activate Repo
+Repo --> Service : List<MaintenanceAlert>
+deactivate Repo
+Service --> Ctrl : List<MaintenanceAlert>
+deactivate Service
+Ctrl --> User : 200 OK
+deactivate Ctrl
+@enduml

@@ -1,0 +1,45 @@
+@startuml
+autonumber
+actor "Backoffice User" as Admin
+participant "AircraftController" as Ctrl
+participant "GetCompatibleRoutesUseCase" as UseCase
+participant "registrationVO : AircraftRegistration" as RegVO
+participant "AircraftRepository" as AircraftRepo
+participant "AircraftModelRepository" as ModelRepo
+participant "RouteRepository" as RouteRepo
+
+activate Admin
+Admin -> Ctrl: GET /api/aircraft/{registration}/compatible-routes
+activate Ctrl
+
+Ctrl -> UseCase: execute(registration)
+activate UseCase
+
+create RegVO
+UseCase -> RegVO: new AircraftRegistration(registration)
+
+UseCase -> AircraftRepo: findById(registrationVO)
+activate AircraftRepo
+AircraftRepo --> UseCase: aircraft
+deactivate AircraftRepo
+
+UseCase -> ModelRepo: findById(aircraft.getModelId())
+activate ModelRepo
+ModelRepo --> UseCase: model
+deactivate ModelRepo
+
+UseCase -> RouteRepo: findAll()
+activate RouteRepo
+RouteRepo --> UseCase: allRoutes
+deactivate RouteRepo
+
+note right of UseCase: O sistema filtra as rotas onde:\n- status == ACTIVE\n- minimumRange <= model.maxRange\n- minimumCapacity <= model.maxCapacity
+UseCase -> UseCase: filter(allRoutes)
+
+UseCase --> Ctrl: compatibleRoutes
+deactivate UseCase
+
+Ctrl --> Admin: 200 OK (List<Route>)
+deactivate Ctrl
+deactivate Admin
+@enduml

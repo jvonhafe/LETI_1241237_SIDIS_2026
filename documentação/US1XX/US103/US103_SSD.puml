@@ -1,0 +1,12 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "User/ATCC" as User
+participant "System" as Sys
+
+User -> Sys : Solicita os detalhes de uma aeronave pela matrícula
+activate Sys
+Sys --> User : Devolve os detalhes operacionais da aeronave (OK)
+deactivate Sys
+@enduml

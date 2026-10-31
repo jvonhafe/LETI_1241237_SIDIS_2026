@@ -1,0 +1,53 @@
+@startuml
+autonumber
+skinparam maxMessageSize 150
+
+actor "ATCC/Backoffice" as Admin
+participant "AirportController" as Ctrl
+participant "RegisterAirportUseCase" as UC
+participant "IataCode" as IATA <<Value Object>>
+participant "Airport" as Entity <<Aggregate Root>>
+participant "AirportRepository" as Repo
+database "Base de Dados" as DB
+
+Admin -> Ctrl : POST /api/airports (JSON)
+activate Ctrl
+
+Ctrl -> UC : execute()
+activate UC
+
+UC -> IATA ** : create(iataCode)
+activate IATA
+IATA --> UC : iataCode
+deactivate IATA
+
+UC -> Repo : existsById(iataCode)
+activate Repo
+Repo -> DB : SELECT (procura por IATA)
+activate DB
+DB --> Repo : false (não existe)
+deactivate DB
+Repo --> UC : false
+deactivate Repo
+
+UC -> Entity ** : create(iataCode, name, city, country, timezone, status)
+activate Entity
+Entity --> UC : airport
+deactivate Entity
+
+UC -> Repo : save(airport)
+activate Repo
+Repo -> DB : INSERT (guarda aeroporto)
+activate DB
+DB --> Repo : success
+deactivate DB
+Repo --> UC : savedAirport
+deactivate Repo
+
+UC --> Ctrl : savedAirport
+deactivate UC
+
+Ctrl --> Admin : 201 Created (Airport Data)
+deactivate Ctrl
+
+@enduml

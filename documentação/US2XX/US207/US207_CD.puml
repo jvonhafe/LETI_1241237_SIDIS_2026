@@ -1,0 +1,49 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+
+    class AirportController <<RestController>> {
+      + registerDetailedAirport(request: DetailedAirportDto): ResponseEntity
+    }
+
+    class RegisterDetailedAirportUseCase <<UseCase>> {
+      + execute(dto: DetailedAirportDto): Airport
+    }
+
+    interface AirportRepository <<Repository>> {
+      + save(airport: Airport): Airport
+    }
+
+    class Airport <<Aggregate Root>> {
+      - name: String
+      - city: String
+      - country: String
+      + addFacility(facility: Facility)
+      + addImage(image: MediaImage)
+    }
+
+    class IataCode <<Value Object>> {
+      - code: String
+    }
+
+    class Facility <<Entity Local>> {
+      - type: String
+      - capacity: int
+      - description: String
+    }
+
+    class MediaImage <<Entity Local>> {
+      - imageUrl: String
+      - description: String
+    }
+
+    AirportController "1" --> "1" RegisterDetailedAirportUseCase : calls >
+    RegisterDetailedAirportUseCase "1" --> "1" AirportRepository : uses >
+    RegisterDetailedAirportUseCase ..> Airport : creates/modifies >
+    RegisterDetailedAirportUseCase ..> IataCode : creates >
+
+    Airport "1" *-- "1" IataCode : identified by >
+    Airport "1" *-- "0..*" Facility : has >
+    Airport "1" *-- "0..*" MediaImage : depicted by >
+@enduml

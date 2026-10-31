@@ -1,0 +1,13 @@
+@startuml
+
+actor "ATCC Operator" as ATCC
+participant "AISafe System" as System
+
+activate ATCC
+ATCC -> System : Solicita a lista de rotas de um aeroporto específico (por IATA)
+activate System
+
+System --> ATCC : Devolve a lista de rotas (partidas e chegadas)
+deactivate System
+deactivate ATCC
+@enduml

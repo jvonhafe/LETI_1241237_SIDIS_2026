@@ -1,0 +1,69 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "ATCC" as User
+participant "RouteController" as Ctrl
+participant "RouteService" as Service
+participant "AirportRepository" as AirportRepo
+participant "RouteRepository" as RouteRepo
+participant "RouteHistoryRepository" as HistoryRepo
+database "Base de Dados" as DB
+
+User -> Ctrl : POST /routes (Route Data)
+activate Ctrl
+
+Ctrl -> Service : createRoute(...)
+activate Service
+
+Service -> AirportRepo : findById(originAirport)
+activate AirportRepo
+AirportRepo -> DB : SELECT Airport origem
+activate DB
+DB --> AirportRepo : originAirport
+deactivate DB
+AirportRepo --> Service : originAirport
+deactivate AirportRepo
+
+Service -> AirportRepo : findById(destinationAirport)
+activate AirportRepo
+AirportRepo -> DB : SELECT Airport destino
+activate DB
+DB --> AirportRepo : destinationAirport
+deactivate DB
+AirportRepo --> Service : destinationAirport
+deactivate AirportRepo
+
+Service -> RouteRepo : existsByOriginAndDestinationAndStatus(...)
+activate RouteRepo
+RouteRepo -> DB : SELECT Route ativa
+activate DB
+DB --> RouteRepo : false
+deactivate DB
+RouteRepo --> Service : false
+deactivate RouteRepo
+
+Service -> RouteRepo : save(route)
+activate RouteRepo
+RouteRepo -> DB : INSERT Route
+activate DB
+DB --> RouteRepo : success
+deactivate DB
+RouteRepo --> Service : savedRoute
+deactivate RouteRepo
+
+Service -> HistoryRepo : save(RouteHistory CREATED)
+activate HistoryRepo
+HistoryRepo -> DB : INSERT RouteHistory
+activate DB
+DB --> HistoryRepo : success
+deactivate DB
+HistoryRepo --> Service : savedHistory
+deactivate HistoryRepo
+
+Service --> Ctrl : savedRoute
+deactivate Service
+
+Ctrl --> User : 201 Created (Route)
+deactivate Ctrl
+@enduml

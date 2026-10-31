@@ -1,0 +1,30 @@
+@startuml
+autonumber
+skinparam maxMessageSize 150
+
+actor "ATCC/Backoffice" as Admin
+participant "AirportController" as Ctrl
+participant "AirportRepository" as Repo
+database "Base de Dados" as DB
+
+Admin -> Ctrl : GET /api/airports
+activate Ctrl
+
+note right of Ctrl: Passa os parâmetros de \npesquisa opcionais (filtros)
+Ctrl -> Repo : searchAirports(city, country, name)
+activate Repo
+
+
+Repo -> DB : SELECT * FROM airport WHERE city LIKE ? ...
+activate DB
+DB --> Repo : List<Airport>
+deactivate DB
+Repo --> Ctrl : List<Airport>
+deactivate Repo
+
+note right of Ctrl: O Controller converte a lista\npara CollectionModel e adiciona\nlinks HATEOAS a cada elemento
+Ctrl -> Ctrl : CollectionModel.of(airports...)
+
+Ctrl --> Admin : 200 OK (Lista Filtrada + Links)
+deactivate Ctrl
+@enduml

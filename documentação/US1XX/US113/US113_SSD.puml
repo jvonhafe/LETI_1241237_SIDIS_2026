@@ -1,0 +1,17 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "ATCC" as User
+participant "System" as Sys
+
+User -> Sys : Consulta detalhes de uma rota (routeId)
+activate Sys
+Sys --> User : Devolve detalhes da rota
+deactivate Sys
+
+User -> Sys : Consulta rotas a partir de um aeroporto (iataCode)
+activate Sys
+Sys --> User : Devolve lista de rotas desse aeroporto
+deactivate Sys
+@enduml

@@ -1,0 +1,24 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "Backoffice Operator" as User
+participant "AircraftModelController" as Ctrl
+participant "AircraftModelRepository" as Repo
+database "Base de Dados" as DB
+
+User -> Ctrl : POST /api/aircraft-models (Aircraft Model Data)
+activate Ctrl
+
+Ctrl -> Repo : save(model)
+activate Repo
+Repo -> DB : INSERT (guarda especificações técnicas do modelo)
+activate DB
+DB --> Repo : success
+deactivate DB
+Repo --> Ctrl : savedModel
+deactivate Repo
+
+Ctrl --> User : Created (AircraftModel)
+deactivate Ctrl
+@enduml

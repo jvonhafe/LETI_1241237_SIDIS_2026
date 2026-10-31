@@ -1,0 +1,56 @@
+@startuml
+autonumber
+skinparam maxMessageSize 150
+
+actor "ATCC/Backoffice" as Admin
+participant "AirportController" as Ctrl
+participant "UpdateAirportStatusUseCase" as UC
+participant "IataCode" as IATA <<Value Object>>
+participant "AirportRepository" as Repo
+participant "Airport" as Entity <<Aggregate Root>>
+database "Base de Dados" as DB
+
+Admin -> Ctrl : PATCH /api/airports/
+activate Ctrl
+
+Ctrl -> UC : execute(iata, newStatus)
+activate UC
+
+note right of UC: O Use Case orquestra o fluxo\ne valida o formato do IATA no Domínio
+UC -> IATA ** : create(iata)
+activate IATA
+IATA --> UC : iataCode
+deactivate IATA
+
+UC -> Repo : findById(iataCode)
+activate Repo
+Repo -> DB : SELECT * FROM airport WHERE iata_code = ?
+activate DB
+DB --> Repo : Airport Record
+deactivate DB
+Repo --> UC : Optional<Airport>
+deactivate Repo
+
+note right of UC: O Use Case pede à Entidade\npara executar a lógica de negócio
+UC -> Entity : updateStatus(newStatus)
+activate Entity
+Entity -> Entity : validateStatusTransition()
+Entity --> UC :
+deactivate Entity
+
+UC -> Repo : save(airport)
+activate Repo
+Repo -> DB : UPDATE airport SET status = ?
+activate DB
+DB --> Repo : success
+deactivate DB
+Repo --> UC : updatedAirport
+deactivate Repo
+
+UC --> Ctrl : updatedAirport
+deactivate UC
+
+Ctrl --> Admin : 200 OK (updatedAirport)
+deactivate Ctrl
+
+@enduml

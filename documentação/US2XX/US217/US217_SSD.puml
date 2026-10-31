@@ -1,0 +1,7 @@
+@startuml
+autonumber
+actor "Maintenance Operator" as Op
+participant "AISafe System" as System
+Op -> System : Solicita agendamento com componente (ex: ENGINE)
+System --> Op : Confirma agendamento e categoria
+@enduml

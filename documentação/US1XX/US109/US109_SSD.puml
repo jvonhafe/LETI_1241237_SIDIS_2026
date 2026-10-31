@@ -1,0 +1,12 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "Backoffice Operator" as User
+participant "System" as Sys
+
+User -> Sys : Atualiza o estado de um aeroporto
+activate Sys
+Sys --> User : Valida, altera e devolve os dados atualizados
+deactivate Sys
+@enduml

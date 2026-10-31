@@ -1,0 +1,7 @@
+@startuml
+autonumber
+actor "User" as User
+participant "AISafe System" as System
+User -> System : Pesquisa manutenções por filtros e paginação
+System --> User : Devolve página de resultados
+@enduml
