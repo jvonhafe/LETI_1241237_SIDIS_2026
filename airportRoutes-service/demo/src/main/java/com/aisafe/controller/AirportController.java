@@ -110,7 +110,7 @@ public class AirportController {
             for (String peerPort : peers) {
                 if (!peerPort.equals(this.serverPort)) { // Garante que não pergunta a si próprio
                     try {
-                        String peerUrl = "http://localhost:" + peerPort + "/api/airports/" + iata;
+                        String peerUrl = "https://localhost:" + peerPort + "/api/airports/" + iata;
 
                         // Adiciona o cabeçalho X-Forwarded=true para avisar a outra instância que é um reencaminhamento
                         HttpHeaders headers = new HttpHeaders();

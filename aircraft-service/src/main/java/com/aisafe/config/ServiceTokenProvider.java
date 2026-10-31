@@ -10,12 +10,12 @@ import java.util.Map;
 
 /**
  * Obtém (e guarda em cache) o token de serviço que identifica ESTE serviço perante os outros.
- * O token é pedido ao auth-service com o serviceId e o segredo deste serviço.
+ * O token é pedido ao auth-service, por HTTPS, com o serviceId e o segredo deste serviço.
  */
 @Component
 public class ServiceTokenProvider {
 
-    private final RestTemplate authClient = new RestTemplate(); // cliente próprio, sem interceptor
+    private final RestTemplate authClient; // cliente próprio, sem interceptor
     private final String authUrl;
     private final String serviceId;
     private final String serviceSecret;
@@ -23,12 +23,15 @@ public class ServiceTokenProvider {
     private String cachedToken;
     private Instant expiresAt = Instant.EPOCH;
 
-    public ServiceTokenProvider(@Value("${aisafe.auth.url:http://localhost:8084}") String authUrl,
+    public ServiceTokenProvider(@Value("${aisafe.auth.url:https://localhost:8084}") String authUrl,
                                 @Value("${aisafe.service.id}") String serviceId,
-                                @Value("${aisafe.service.secret}") String serviceSecret) {
+                                @Value("${aisafe.service.secret}") String serviceSecret,
+                                @Value("${aisafe.tls.truststore:classpath:aisafe-truststore.p12}") String truststore,
+                                @Value("${aisafe.tls.truststore-password:changeit-dev}") String truststorePassword) {
         this.authUrl = authUrl;
         this.serviceId = serviceId;
         this.serviceSecret = serviceSecret;
+        this.authClient = new RestTemplate(SecureHttp.requestFactory(truststore, truststorePassword));
     }
 
     @SuppressWarnings("unchecked")
