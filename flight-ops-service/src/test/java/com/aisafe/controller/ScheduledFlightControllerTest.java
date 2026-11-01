@@ -1,7 +1,7 @@
 package com.aisafe.controller;
 
+import com.aisafe.application.usecase.*;
 import com.aisafe.model.ScheduledFlight;
-import com.aisafe.repository.ScheduledFlightRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,13 +10,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -33,10 +31,22 @@ class ScheduledFlightControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private ScheduledFlightRepository scheduledFlightRepository;
+    private CreateFlightUseCase createFlightUseCase;
 
     @MockitoBean
-    private RestTemplate restTemplate;
+    private GetAllFlightsUseCase getAllFlightsUseCase;
+
+    @MockitoBean
+    private GetFlightByNumberUseCase getFlightByNumberUseCase;
+
+    @MockitoBean
+    private UpdateFlightUseCase updateFlightUseCase;
+
+    @MockitoBean
+    private DeleteFlightUseCase deleteFlightUseCase;
+
+    @MockitoBean
+    private GetFlightWithDetailsUseCase getFlightWithDetailsUseCase;
 
     @BeforeEach
     void setUp() {
@@ -47,7 +57,7 @@ class ScheduledFlightControllerTest {
     void deveCriarVooComSucesso() throws Exception {
         ScheduledFlight voo = new ScheduledFlight("TP123", "AC-01", "LIS", "OPO", LocalDateTime.now(), LocalDateTime.now().plusHours(2), "SCHEDULED");
 
-        when(scheduledFlightRepository.save(any(ScheduledFlight.class))).thenReturn(voo);
+        when(createFlightUseCase.execute(any(ScheduledFlight.class))).thenReturn(voo);
 
         String jsonBody = """
                 {
@@ -70,7 +80,7 @@ class ScheduledFlightControllerTest {
     void deveListarTodosOsVoos() throws Exception {
         ScheduledFlight voo1 = new ScheduledFlight("TP123", "AC-01", "LIS", "OPO", LocalDateTime.now(), LocalDateTime.now().plusHours(2), "SCHEDULED");
 
-        when(scheduledFlightRepository.findAll()).thenReturn(Arrays.asList(voo1));
+        when(getAllFlightsUseCase.execute()).thenReturn(Arrays.asList(voo1));
 
         mockMvc.perform(get("/api/flights"))
                 .andExpect(status().isOk())
@@ -81,7 +91,7 @@ class ScheduledFlightControllerTest {
     void deveRetornarVooPorNumero() throws Exception {
         ScheduledFlight voo = new ScheduledFlight("TP123", "AC-01", "LIS", "OPO", LocalDateTime.now(), LocalDateTime.now().plusHours(2), "SCHEDULED");
 
-        when(scheduledFlightRepository.findById("TP123")).thenReturn(Optional.of(voo));
+        when(getFlightByNumberUseCase.execute("TP123")).thenReturn(voo);
 
         mockMvc.perform(get("/api/flights/TP123"))
                 .andExpect(status().isOk())
@@ -90,10 +100,9 @@ class ScheduledFlightControllerTest {
 
     @Test
     void deveAtualizarVooComSucesso() throws Exception {
-        ScheduledFlight vooExistente = new ScheduledFlight("TP123", "AC-01", "LIS", "OPO", LocalDateTime.now(), LocalDateTime.now().plusHours(2), "SCHEDULED");
+        ScheduledFlight vooExistente = new ScheduledFlight("TP123", "AC-02", "LIS", "MAD", LocalDateTime.now(), LocalDateTime.now().plusHours(2), "IN_FLIGHT");
 
-        when(scheduledFlightRepository.findById("TP123")).thenReturn(Optional.of(vooExistente));
-        when(scheduledFlightRepository.save(any(ScheduledFlight.class))).thenReturn(vooExistente);
+        when(updateFlightUseCase.execute(eq("TP123"), any(ScheduledFlight.class))).thenReturn(vooExistente);
 
         String jsonBody = """
                 {
@@ -113,8 +122,7 @@ class ScheduledFlightControllerTest {
 
     @Test
     void deveApagarVooComSucesso() throws Exception {
-        when(scheduledFlightRepository.existsById("TP123")).thenReturn(true);
-        doNothing().when(scheduledFlightRepository).deleteById("TP123");
+        doNothing().when(deleteFlightUseCase).execute("TP123");
 
         mockMvc.perform(delete("/api/flights/TP123"))
                 .andExpect(status().isNoContent());
@@ -123,12 +131,14 @@ class ScheduledFlightControllerTest {
     @Test
     void deveRetornarDetalhesDoVooComAeronave() throws Exception {
         ScheduledFlight voo = new ScheduledFlight("TP123", "AC-01", "LIS", "OPO", LocalDateTime.now(), LocalDateTime.now().plusHours(2), "SCHEDULED");
-
-        when(scheduledFlightRepository.findById("TP123")).thenReturn(Optional.of(voo));
-
         Object mockAircraftDetails = Map.of("id", "AC-01", "model", "Boeing 737");
-        when(restTemplate.getForObject(eq("http://localhost:8081/api/aircraft/AC-01"), eq(Object.class)))
-                .thenReturn(mockAircraftDetails);
+
+        Map<String, Object> mockResponse = Map.of(
+                "flight", voo,
+                "aircraftDetails", mockAircraftDetails
+        );
+
+        when(getFlightWithDetailsUseCase.execute(eq("TP123"), any())).thenReturn(mockResponse);
 
         mockMvc.perform(get("/api/flights/TP123/details"))
                 .andExpect(status().isOk())

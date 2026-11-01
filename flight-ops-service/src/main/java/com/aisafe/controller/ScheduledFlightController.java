@@ -1,13 +1,9 @@
 package com.aisafe.controller;
 
+import com.aisafe.application.usecase.*;
 import com.aisafe.model.ScheduledFlight;
-import com.aisafe.repository.ScheduledFlightRepository;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
@@ -16,54 +12,50 @@ import java.util.Map;
 @RequestMapping("/api/flights")
 public class ScheduledFlightController {
 
-    private final ScheduledFlightRepository flightRepository;
-    private final RestTemplate restTemplate;
+    private final CreateFlightUseCase createFlightUseCase;
+    private final GetAllFlightsUseCase getAllFlightsUseCase;
+    private final GetFlightByNumberUseCase getFlightByNumberUseCase;
+    private final UpdateFlightUseCase updateFlightUseCase;
+    private final DeleteFlightUseCase deleteFlightUseCase;
+    private final GetFlightWithDetailsUseCase getFlightWithDetailsUseCase;
 
-    public ScheduledFlightController(ScheduledFlightRepository flightRepository, RestTemplate restTemplate) {
-        this.flightRepository = flightRepository;
-        this.restTemplate = restTemplate;
+    public ScheduledFlightController(CreateFlightUseCase createFlightUseCase,
+                                     GetAllFlightsUseCase getAllFlightsUseCase,
+                                     GetFlightByNumberUseCase getFlightByNumberUseCase,
+                                     UpdateFlightUseCase updateFlightUseCase,
+                                     DeleteFlightUseCase deleteFlightUseCase,
+                                     GetFlightWithDetailsUseCase getFlightWithDetailsUseCase) {
+        this.createFlightUseCase = createFlightUseCase;
+        this.getAllFlightsUseCase = getAllFlightsUseCase;
+        this.getFlightByNumberUseCase = getFlightByNumberUseCase;
+        this.updateFlightUseCase = updateFlightUseCase;
+        this.deleteFlightUseCase = deleteFlightUseCase;
+        this.getFlightWithDetailsUseCase = getFlightWithDetailsUseCase;
     }
 
     @PostMapping
     public ResponseEntity<ScheduledFlight> createFlight(@RequestBody ScheduledFlight flight) {
-        ScheduledFlight savedFlight = flightRepository.save(flight);
-        return ResponseEntity.ok(savedFlight);
+        return ResponseEntity.ok(createFlightUseCase.execute(flight));
     }
 
     @GetMapping
-    public List<ScheduledFlight> getAllFlights() {
-        return flightRepository.findAll();
+    public ResponseEntity<List<ScheduledFlight>> getAllFlights() {
+        return ResponseEntity.ok(getAllFlightsUseCase.execute());
     }
 
     @GetMapping("/{flightNumber}")
     public ResponseEntity<ScheduledFlight> getFlightByNumber(@PathVariable String flightNumber) {
-        ScheduledFlight flight = flightRepository.findById(flightNumber)
-                .orElseThrow(() -> new RuntimeException("Voo não encontrado com o número: " + flightNumber));
-        return ResponseEntity.ok(flight);
+        return ResponseEntity.ok(getFlightByNumberUseCase.execute(flightNumber));
     }
 
     @PutMapping("/{flightNumber}")
     public ResponseEntity<ScheduledFlight> updateFlight(@PathVariable String flightNumber, @RequestBody ScheduledFlight updatedFlight) {
-        ScheduledFlight flight = flightRepository.findById(flightNumber)
-                .orElseThrow(() -> new RuntimeException("Voo não encontrado para atualização: " + flightNumber));
-
-        flight.setAircraftId(updatedFlight.getAircraftId());
-        flight.setOriginAirportId(updatedFlight.getOriginAirportId());
-        flight.setDestinationAirportId(updatedFlight.getDestinationAirportId());
-        flight.setDepartureTime(updatedFlight.getDepartureTime());
-        flight.setArrivalTime(updatedFlight.getArrivalTime());
-        flight.setStatus(updatedFlight.getStatus());
-
-        ScheduledFlight saved = flightRepository.save(flight);
-        return ResponseEntity.ok(saved);
+        return ResponseEntity.ok(updateFlightUseCase.execute(flightNumber, updatedFlight));
     }
 
     @DeleteMapping("/{flightNumber}")
     public ResponseEntity<Void> deleteFlight(@PathVariable String flightNumber) {
-        if (!flightRepository.existsById(flightNumber)) {
-            throw new RuntimeException("Voo não encontrado para apagar: " + flightNumber);
-        }
-        flightRepository.deleteById(flightNumber);
+        deleteFlightUseCase.execute(flightNumber);
         return ResponseEntity.noContent().build();
     }
 
@@ -72,36 +64,6 @@ public class ScheduledFlightController {
             @PathVariable String flightNumber,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
-        ScheduledFlight flight = flightRepository.findById(flightNumber)
-                .orElseThrow(() -> new RuntimeException("Voo não encontrado: " + flightNumber));
-
-        String aircraftServiceUrl = "http://localhost:8081/api/aircraft/" + flight.getAircraftId();
-
-        Object aircraftDetails;
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            if (authHeader != null) {
-                headers.set("Authorization", authHeader);
-            }
-            HttpEntity<String> entity = new HttpEntity<>(headers);
-
-            ResponseEntity<Object> aircraftResponse = restTemplate.exchange(
-                    aircraftServiceUrl,
-                    HttpMethod.GET,
-                    entity,
-                    Object.class
-            );
-            aircraftDetails = aircraftResponse.getBody();
-
-        } catch (Exception e) {
-            aircraftDetails = "Erro ao contactar o aircraft-service: " + e.getMessage();
-        }
-
-        Map<String, Object> response = Map.of(
-                "flight", flight,
-                "aircraftDetails", aircraftDetails
-        );
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(getFlightWithDetailsUseCase.execute(flightNumber, authHeader));
     }
 }

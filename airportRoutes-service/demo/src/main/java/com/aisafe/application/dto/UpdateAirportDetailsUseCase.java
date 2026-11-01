@@ -1,4 +1,4 @@
-package com.aisafe.application.airport;
+package com.aisafe.application.dto;
 
 import com.aisafe.model.Airport;
 import com.aisafe.model.ContactInfo;

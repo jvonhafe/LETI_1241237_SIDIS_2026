@@ -1,0 +1,23 @@
+@startuml c4_level2_flightops_container
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title "C4 Level 2: Container Diagram - Flight Operations Service"
+
+Person(admin, "Operador ATCC / Admin", "Agenda, cancela e monitoriza operações de voo.")
+
+System_Boundary(aisafe, "AISafe Distributed System") {
+    Container(flight_ops_service, "Flight Operations Service", "Java, Spring Boot", "Orquestrador principal. Gere agendamento de voos e agrega dados externos (P2P Forwarding).")
+
+    Container(aircraft_service, "Aircraft & Maintenance Service", "Java, Spring Boot", "Fornece dados operacionais da frota. Requer JWT válido.")
+    Container(airport_routes_service, "Airports & Routes Service", "Java, Spring Boot", "Fornece catálogo de rotas e aeroportos. Requer JWT válido.")
+
+    ContainerDb(flight_db, "Flight Ops Database", "H2 / PostgreSQL", "Armazena exclusivamente a agenda de voos e estados operacionais.")
+}
+
+Rel(admin, flight_ops_service, "Gere operações de voo", "HTTPS/REST")
+
+Rel(flight_ops_service, aircraft_service, "Valida aeronave e agrega detalhes (P2P)", "HTTPS/REST + JWT", $tags="sync")
+Rel(flight_ops_service, airport_routes_service, "Valida rota e aeroportos (P2P)", "HTTPS/REST + JWT", $tags="sync")
+Rel(flight_ops_service, flight_db, "Lê e escreve agenda", "JDBC")
+
+@enduml

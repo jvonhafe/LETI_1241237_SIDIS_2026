@@ -1,9 +1,9 @@
 package com.aisafe.controller;
 
-import com.aisafe.application.airport.RegisterAirportUseCase;
-import com.aisafe.application.airport.RegisterDetailedAirportUseCase;
-import com.aisafe.application.airport.UpdateAirportDetailsUseCase;
-import com.aisafe.application.airport.UpdateAirportStatusUseCase;
+import com.aisafe.application.dto.RegisterAirportUseCase;
+import com.aisafe.application.dto.RegisterDetailedAirportUseCase;
+import com.aisafe.application.dto.UpdateAirportDetailsUseCase;
+import com.aisafe.application.dto.UpdateAirportStatusUseCase;
 import com.aisafe.model.Airport;
 import com.aisafe.model.BusiestAirportDto;
 import com.aisafe.model.IataCode;

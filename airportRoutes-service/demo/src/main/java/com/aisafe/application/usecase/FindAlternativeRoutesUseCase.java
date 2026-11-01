@@ -1,4 +1,4 @@
-package com.aisafe.application.route;
+package com.aisafe.application.usecase;
 
 import com.aisafe.model.IataCode;
 import com.aisafe.model.Route;
