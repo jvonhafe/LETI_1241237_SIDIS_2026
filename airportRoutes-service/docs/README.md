@@ -1,10 +1,11 @@
 # AISafe - Plataforma Distribuída de Gestão de Operações de Aviação
 
 ## 1. Visão Geral e Arquitetura do Sistema
-O **AISafe** é um sistema distribuído baseado em microsserviços, desenvolvido em **Java com Spring Boot**, desenhado para gerir aeroportos, rotas e operações de voo de forma escalável e resiliente. O projeto implementa replicação de dados descentralizada, mensageria assíncrona orientada a eventos e propagação de pedidos ponto a ponto (peer-to-peer).
+O **AISafe** é um sistema distribuído baseado em microsserviços, desenvolvido em **Java com Spring Boot**, desenhado para gerir aeroportos, rotas e operações de voo de forma escalável e resiliente.
+O projeto implementa replicação de dados descentralizada, mensagem assíncrona orientada a eventos e propagação de pedidos ponto a ponto (peer-to-peer).
 
 ### Stack Tecnológica:
-* **Backend:** Spring Boot (WebMVC, HATEOAS, Data JPA).
+* **Backend:** Spring Boot.
 * **Base de Dados:** H2 (Persistência local relacional por instância).
 * **Mensageria:** RabbitMQ (Versão 4, filas duráveis com `durable: true`).
 * **Documentação de API:** SpringDoc OpenAPI (Swagger).
@@ -34,7 +35,7 @@ Para garantir que os dados replicados entre instâncias vizinhas (portas `8081` 
 ### Pré-requisitos:
 * Java JDK 17 ou superior.
 * Apache Maven (ou utilização do Maven Wrapper incluído `./mvnw`).
-* Servidor RabbitMQ a correr localmente na porta `5672` (com painel de gestão na porta `15672`).
+* Servidor RabbitMQ a correr localmente(com painel de gestão na porta `15672`).
 
 ### Instruções de Instalação e Execução:
 1. **Compilar o projeto:**
