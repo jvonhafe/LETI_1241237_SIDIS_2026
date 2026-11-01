@@ -3,6 +3,7 @@ package com.aisafe.controller;
 import com.aisafe.application.usecase.*;
 import com.aisafe.model.ScheduledFlight;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/flights")
+@PreAuthorize("hasAnyRole('ADMIN', 'ATCC')")
 public class ScheduledFlightController {
 
     private final CreateFlightUseCase createFlightUseCase;

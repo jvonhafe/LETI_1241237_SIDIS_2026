@@ -25,7 +25,7 @@ public class GetFlightWithDetailsUseCase {
         ScheduledFlight flight = flightRepository.findById(flightNumber)
                 .orElseThrow(() -> new RuntimeException("Voo não encontrado: " + flightNumber));
 
-        String aircraftServiceUrl = "http://localhost:8081/api/aircraft/" + flight.getAircraftId();
+        String aircraftServiceUrl = "https://localhost:8081/api/aircraft/" + flight.getAircraftId();
         Object aircraftDetails;
 
         try {

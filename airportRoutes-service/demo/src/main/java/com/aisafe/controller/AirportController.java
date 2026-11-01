@@ -18,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -30,6 +31,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/airports")
+@PreAuthorize("hasAnyRole('ADMIN', 'ATCC', 'BACKOFFICE', 'SERVICE')")
 public class AirportController {
 
     @Autowired
@@ -60,6 +62,7 @@ public class AirportController {
     private final List<String> peers = List.of("8081", "8082");
 
     //US106:registar (simples)
+    @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Airport createAirport(@RequestBody Airport airport) {
@@ -69,6 +72,7 @@ public class AirportController {
     }
 
     // US207: Registar Aeroporto Detalhado (Com Fotos e Instalações)
+    @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE')")
     @PostMapping("/detailed")
     @ResponseStatus(HttpStatus.CREATED)
     public Airport createDetailedAirport(@RequestBody RegisterDetailedAirportUseCase.DetailedAirportDto request) {
@@ -103,7 +107,9 @@ public class AirportController {
             for (String peerPort : peers) { //vai procurar outras instancias
                 if (!peerPort.equals(this.serverPort)) {
                     try {
-                        String peerUrl = "http://localhost:" + peerPort + "/api/airports/" + iata;
+                        String peerUrl = "https://localhost:" + peerPort + "/api/airports/" + iata;
+
+                        // Adiciona o cabeçalho X-Forwarded=true para avisar a outra instância que é um reencaminhamento
                         HttpHeaders headers = new HttpHeaders();
                         headers.add("X-Forwarded", "true");
                         HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -142,12 +148,14 @@ public class AirportController {
     }
 
     // US109: Atualizar Estado
+    @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE')")
     @PatchMapping("/{iata}/status")
     public Airport updateAirportStatus(@PathVariable String iata, @RequestParam String status) {
         return updateAirportStatusUseCase.execute(iata, status);
     }
 
     // US208: Atualizar Detalhes do Aeroporto (Contactos e Horários)
+    @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE')")
     @PatchMapping("/{iata}/details")
     public Airport updateAirportDetails(
             @PathVariable String iata,
@@ -157,6 +165,7 @@ public class AirportController {
     }
 
     // --- NOVO: US210: Estatísticas dos Aeroportos mais movimentados ---
+    @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE')")
     @GetMapping("/statistics/busiest")
     public List<BusiestAirportDto> getBusiestAirports(
             @RequestParam(defaultValue = "5") int limit) {

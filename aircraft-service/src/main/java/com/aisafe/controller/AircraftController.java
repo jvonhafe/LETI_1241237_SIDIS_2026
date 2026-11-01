@@ -31,7 +31,7 @@ public class AircraftController {
     @Autowired
     private RestTemplate restTemplate;
 
-    @Value("${peer.node.url:http://localhost:8084/api}")
+    @Value("${peer.node.url:https://localhost:8082/api}")
     private String peerNodeUrl;
 
     public AircraftController(RegisterAircraftUseCase registerUseCase, AircraftRepository aircraftRepository) {
@@ -48,7 +48,7 @@ public class AircraftController {
 
     @Operation(summary = "Obter Detalhes da Aeronave (com P2P Forwarding)")
     @GetMapping("/{registration}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE', 'ATCC')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE', 'ATCC', 'SERVICE')")
     public ResponseEntity<?> getAircraftDetails(
             @PathVariable String registration,
             @RequestHeader(value = "Authorization", required = false) String token,
@@ -136,7 +136,7 @@ public class AircraftController {
 
     @Operation(summary = "Fornecer capacidades da aeronave para cálculo de rotas no serviço externo")
     @GetMapping("/{registration}/specs")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATCC')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ATCC', 'SERVICE')")
     public ResponseEntity<?> getAircraftSpecs(@PathVariable String registration) {
         AircraftRegistration regVo = new AircraftRegistration(registration);
 
