@@ -1,2 +1,4 @@
-com\aisafe\model\ScheduledFlightTest.class
 com\aisafe\controller\ScheduledFlightControllerTest.class
+com\aisafe\core\security\RbacSecurityTest.class
+com\aisafe\config\AuditLoggingFilterTest.class
+com\aisafe\model\ScheduledFlightTest.class
