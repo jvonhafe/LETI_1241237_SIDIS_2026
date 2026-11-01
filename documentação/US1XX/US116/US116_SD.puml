@@ -1,0 +1,37 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "Maintenance Technician" as User
+participant "MaintenanceRecordController" as Ctrl
+participant "MaintenanceService" as Service
+participant "AircraftRepository" as AircraftRepo
+participant "MaintenanceRecordRepository" as RecordRepo
+database "Base de Dados" as DB
+
+User -> Ctrl : GET /api/maintenance-records/aircraft/{registration}
+activate Ctrl
+
+Ctrl -> Service : recordsForAircraft(registration)
+activate Service
+
+Service -> AircraftRepo : existsById(registration)
+activate AircraftRepo
+AircraftRepo -> DB : SELECT aircraft
+DB --> AircraftRepo : result
+AircraftRepo --> Service : exists
+deactivate AircraftRepo
+
+Service -> RecordRepo : findByAircraftRegistration(registration)
+activate RecordRepo
+RecordRepo -> DB : SELECT maintenance records
+DB --> RecordRepo : records
+RecordRepo --> Service : records
+deactivate RecordRepo
+
+Service --> Ctrl : records
+deactivate Service
+
+Ctrl --> User : OK (List<MaintenanceRecord>)
+deactivate Ctrl
+@enduml

@@ -1,0 +1,40 @@
+@startuml
+autonumber
+actor "ATCC" as ATCCUser
+participant "AircraftController" as Ctrl
+participant "CalculateFleetOperationalHoursUseCase" as UseCase
+participant "AircraftRepository" as AircraftRepo
+participant "MaintenanceRecordRepository" as MaintRepo
+participant "dto : AircraftOperationalHoursDTO" as DTO
+
+activate ATCCUser
+ATCCUser -> Ctrl: GET /api/aircraft/operational-hours
+activate Ctrl
+
+Ctrl -> UseCase: execute()
+activate UseCase
+
+UseCase -> AircraftRepo: findAll()
+activate AircraftRepo
+AircraftRepo --> UseCase: allAircraft
+deactivate AircraftRepo
+
+loop Para cada aeronave (aircraft) em allAircraft
+    UseCase -> MaintRepo: totalMaintenanceHoursByAircraft(registration)
+    activate MaintRepo
+    MaintRepo --> UseCase: maintenanceHours
+    deactivate MaintRepo
+
+    note right of UseCase: Calcula horas de vida:\n(Hoje - manufacturingDate) * 24h\n\noperacional = vida - maintenanceHours
+
+    create DTO
+    UseCase -> DTO: new AircraftOperationalHoursDTO(registration, modelId, operationalHours)
+end
+
+UseCase --> Ctrl: operationalHoursList
+deactivate UseCase
+
+Ctrl --> ATCCUser: 200 OK (List<AircraftOperationalHoursDTO>)
+deactivate Ctrl
+deactivate ATCCUser
+@enduml

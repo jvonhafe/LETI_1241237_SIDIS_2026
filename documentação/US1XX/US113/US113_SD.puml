@@ -1,0 +1,62 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "ATCC" as User
+participant "RouteController" as Ctrl
+participant "RouteService" as Service
+participant "RouteRepository" as RouteRepo
+participant "AirportRepository" as AirportRepo
+database "Base de Dados" as DB
+
+User -> Ctrl : GET /routes/{id}
+activate Ctrl
+
+Ctrl -> Service : getRouteById(id)
+activate Service
+
+Service -> RouteRepo : findById(id)
+activate RouteRepo
+RouteRepo -> DB : SELECT Route por ID
+activate DB
+DB --> RouteRepo : route
+deactivate DB
+RouteRepo --> Service : route
+deactivate RouteRepo
+
+Service --> Ctrl : route
+deactivate Service
+
+Ctrl --> User : 200 OK (Route)
+deactivate Ctrl
+
+User -> Ctrl : GET /routes/from/{iataCode}
+activate Ctrl
+
+Ctrl -> Service : getRoutesFromAirport(iataCode)
+activate Service
+
+Service -> AirportRepo : findById(iataCode)
+activate AirportRepo
+AirportRepo -> DB : SELECT Airport por IATA
+activate DB
+DB --> AirportRepo : airport
+deactivate DB
+AirportRepo --> Service : airport
+deactivate AirportRepo
+
+Service -> RouteRepo : findByOriginAirport(airport)
+activate RouteRepo
+RouteRepo -> DB : SELECT Routes por origem
+activate DB
+DB --> RouteRepo : routes
+deactivate DB
+RouteRepo --> Service : routes
+deactivate RouteRepo
+
+Service --> Ctrl : routes
+deactivate Service
+
+Ctrl --> User : 200 OK (Route List)
+deactivate Ctrl
+@enduml

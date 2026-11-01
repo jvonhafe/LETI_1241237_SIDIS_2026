@@ -1,0 +1,36 @@
+@startuml
+class AircraftModelController {
+  + updateModelSpecifications(modelId: String, updateDTO: UpdateAircraftModelDTO): ResponseEntity<AircraftModel>
+}
+
+class UpdateAircraftModelUseCase {
+  + execute(modelId: String, updateDTO: UpdateAircraftModelDTO): AircraftModel
+}
+
+interface AircraftModelRepository {
+  + findById(modelId: String): Optional<AircraftModel>
+  + save(model: AircraftModel): AircraftModel
+}
+
+class AircraftModel {
+  - modelId: String
+  - maxCapacity: Capacity
+  - fuelCapacity: double
+  - maxRange: double
+  - cruisingSpeed: double
+}
+
+class UpdateAircraftModelDTO {
+  + maxCapacity: int
+  + fuelCapacity: double
+  + maxRange: double
+  + cruisingSpeed: double
+}
+
+AircraftModelController --> UpdateAircraftModelUseCase : uses
+AircraftModelController ..> UpdateAircraftModelDTO : receives
+UpdateAircraftModelUseCase --> AircraftModelRepository : uses
+UpdateAircraftModelUseCase ..> AircraftModel : updates
+UpdateAircraftModelUseCase ..> UpdateAircraftModelDTO : uses
+AircraftModelRepository --> AircraftModel : stores
+@enduml

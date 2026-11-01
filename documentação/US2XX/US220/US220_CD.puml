@@ -1,0 +1,19 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+class MaintenanceRecordController <<RestController>> {
+    + getCostsPerModel(): ResponseEntity
+}
+
+class MaintenanceQueryService <<Service>> {
+    + getCostsPerModel(): List
+}
+
+interface MaintenanceRecordRepository <<Repository>> {
+    + getMaintenanceCostPerModel(): List<Map>
+}
+
+MaintenanceRecordController "1" --> "1" MaintenanceQueryService : uses >
+MaintenanceQueryService "1" --> "1" MaintenanceRecordRepository : calculates >
+@enduml

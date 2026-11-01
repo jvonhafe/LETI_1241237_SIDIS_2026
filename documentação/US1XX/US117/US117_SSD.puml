@@ -1,0 +1,12 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "ATCC" as User
+participant "System" as Sys
+
+User -> Sys : Consulta o total de horas de manutenção da frota
+activate Sys
+Sys --> User : Devolve o total de horas de manutenção
+deactivate Sys
+@enduml

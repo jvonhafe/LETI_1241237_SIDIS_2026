@@ -1,0 +1,21 @@
+@startuml
+autonumber
+actor "User" as User
+participant "MaintenanceController" as Ctrl
+participant "QueryService" as Service
+participant "Repository" as Repo
+
+User -> Ctrl : GET /api/maintenance/search?filters...
+activate Ctrl
+note right of Ctrl: Delega a consulta complexa\npara o Service.
+Ctrl -> Service : searchRecords(filters, pageable)
+activate Service
+Service -> Repo : searchRecords(filters, pageable)
+activate Repo
+Repo --> Service : Page<MaintenanceRecord>
+deactivate Repo
+Service --> Ctrl : Page<MaintenanceRecord>
+deactivate Service
+Ctrl --> User : 200 OK (Page Content)
+deactivate Ctrl
+@enduml

@@ -1,0 +1,48 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+    class AirportController <<RestController>> {
+      + updateAirportDetails(iata: String, request: UpdateDetailsRequest): ResponseEntity
+    }
+
+    class UpdateAirportDetailsUseCase <<UseCase>> {
+      + execute(iata: String, contacts: ContactDto, hours: HoursDto): Airport
+    }
+
+    interface AirportRepository <<Repository>> {
+      + findById(id: IataCode): Optional<Airport>
+      + save(airport: Airport): Airport
+    }
+
+    class Airport <<Aggregate Root>> {
+      - name: String
+      - status: String
+      + updateContactInfo(contacts: ContactInfo)
+      + updateOperatingHours(hours: OperatingHours)
+    }
+
+    class ContactInfo <<Value Object>> {
+      - email: String
+      - phoneNumber: String
+    }
+
+    class OperatingHours <<Value Object>> {
+      - openingTime: LocalTime
+      - closingTime: LocalTime
+    }
+
+    class IataCode <<Value Object>> {
+      - code: String
+    }
+
+    AirportController "1" --> "1" UpdateAirportDetailsUseCase : calls >
+    UpdateAirportDetailsUseCase "1" --> "1" AirportRepository : uses >
+    UpdateAirportDetailsUseCase ..> Airport : modifies >
+    UpdateAirportDetailsUseCase ..> IataCode : creates >
+
+    Airport "1" *-- "1" IataCode : identified by >
+    Airport "1" *-- "0..1" ContactInfo : contains >
+    Airport "1" *-- "0..1" OperatingHours : operates during >
+
+@enduml

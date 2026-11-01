@@ -1,0 +1,29 @@
+@startuml
+autonumber
+
+actor "ATCC Operator" as ATCC
+participant "AirportController" as Ctrl
+participant "AirportRepository" as Repo
+database "Base de Dados" as DB
+
+ATCC -> Ctrl : GET /api/airports/grouped?by=country
+activate Ctrl
+
+note right of Ctrl: CQRS: Sem Use Case.\nO Controller fala com o Repository.
+Ctrl -> Repo : findAll()
+activate Repo
+
+Repo -> DB : SELECT * FROM airport
+activate DB
+DB --> Repo : List<Airport>
+deactivate DB
+
+Repo --> Ctrl : List<Airport> airports
+deactivate Repo
+
+note right of Ctrl: O Controller agrupa a lista em memória\nusando Java Streams (Collectors.groupingBy)\nou devolve um DTO específico.
+Ctrl -> Ctrl : groupAirportsByCountry(airports)
+
+Ctrl --> ATCC : 200 OK (Map<String, List<AirportDto>>)
+deactivate Ctrl
+@enduml

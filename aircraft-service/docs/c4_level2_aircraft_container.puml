@@ -1,0 +1,22 @@
+@startuml c4_level2_aircraft_container
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title "C4 Level 2: Container Diagram - Aircraft & Maintenance Service"
+
+Person(admin, "Administrador / Manutenção", "Gere frota, rotas e manutenções.")
+
+System_Boundary(aisafe, "AISafe Distributed System") {
+    Container(aircraft_service, "Aircraft & Maintenance Service", "Java, Spring Boot", "Gere dados operacionais de aeronaves, modelos e registos de manutenção. Valida tokens JWT.")
+    Container(flight_ops_service, "Flight Operations Service", "Java, Spring Boot", "Agenda voos e atua como agregador de dados (P2P Forwarding).")
+    Container(airport_routes_service, "Airports & Routes Service", "Java, Spring Boot", "Catálogo de aeroportos e gestão de rotas.")
+
+    ContainerDb(aircraft_db, "Aircraft Database", "H2 / PostgreSQL", "Armazena modelos, instâncias de frota e registos de manutenção.")
+}
+
+Rel(admin, flight_ops_service, "Agenda voos", "HTTPS/REST")
+Rel(admin, aircraft_service, "Gere aeronaves e manutenções", "HTTPS/REST")
+
+Rel(flight_ops_service, aircraft_service, "Agrega detalhes da aeronave (P2P)", "HTTPS/REST + JWT", $tags="sync")
+Rel(aircraft_service, aircraft_db, "Lê e escreve dados de frota", "JDBC")
+
+@enduml

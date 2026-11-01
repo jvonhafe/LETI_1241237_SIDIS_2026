@@ -1,0 +1,38 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "Backoffice Operator" as User
+participant "AircraftController" as Ctrl
+participant "AircraftRepository" as Repo
+participant "aircraft:Aircraft" as Model
+database "Base de Dados" as DB
+
+User -> Ctrl : PATCH /api/aircraft/{registration}/status?newStatus=...
+activate Ctrl
+
+Ctrl -> Repo : findById(registration)
+activate Repo
+Repo -> DB : SELECT (carrega registo e versão atual)
+activate DB
+DB --> Repo : aircraft (dados + version)
+deactivate DB
+Repo --> Ctrl : aircraft
+deactivate Repo
+
+Ctrl -> Model : setStatus(statusUpper)
+activate Model
+deactivate Model
+
+Ctrl -> Repo : save(aircraft)
+activate Repo
+Repo -> DB : UPDATE (verifica version antes do commit)
+activate DB
+DB --> Repo : success (incrementa versão)
+deactivate DB
+Repo --> Ctrl : updatedAircraft
+deactivate Repo
+
+Ctrl --> User : OK (Updated Aircraft)
+deactivate Ctrl
+@enduml

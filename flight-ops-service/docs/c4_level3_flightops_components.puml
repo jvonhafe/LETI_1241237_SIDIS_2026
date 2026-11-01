@@ -1,0 +1,32 @@
+@startuml c4_level3_flightops_components
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title "C4 Level 3: Component Diagram - Flight Operations Service"
+
+Container_Boundary(flight_ops_service, "Flight Operations Service (Porta 8083)") {
+    Component(security_filter, "JwtAuthenticationFilter", "Spring Security", "Interceta pedidos REST, extrai o contexto JWT e protege os endpoints.")
+
+    Component(flight_controller, "ScheduledFlightController", "Spring REST Controller", "Expõe os endpoints para agendamento, agregação e gestão de voos.")
+
+    Component(rest_config, "RestTemplateConfig", "Spring @Configuration", "Configura e injeta o cliente HTTP preparado para repassar o cabeçalho Authorization.")
+
+    Component(flight_repo, "ScheduledFlightRepository", "Spring Data JPA", "Interface de abstração para persistência dos voos agendados na base de dados.")
+}
+
+Person(admin, "Cliente (Admin/ATCC)", "Inicia o pedido")
+Container(aircraft_service, "Aircraft Service", "Microsserviço", "Alvo P2P")
+Container(airport_routes, "Airports & Routes Service", "Microsserviço", "Alvo P2P")
+ContainerDb(db, "Flight Ops Database", "Relational DB", "Estado guardado")
+
+Rel(admin, security_filter, "POST /api/flights", "REST/JWT")
+Rel(security_filter, flight_controller, "Repassa pedido validado")
+
+Rel(flight_controller, rest_config, "Usa RestTemplate para Forwarding P2P")
+Rel(flight_controller, flight_repo, "Lê/Escreve")
+
+Rel(rest_config, aircraft_service, "Agrega dados da aeronave", "REST/JWT")
+Rel(rest_config, airport_routes, "Agrega dados da rota", "REST/JWT")
+
+Rel(flight_repo, db, "Lê e Escreve", "JDBC")
+
+@enduml

@@ -1,0 +1,205 @@
+@startuml
+skinparam packageStyle rectangle
+skinparam hide empty members
+
+package "Airport Aggregate" {
+    class Airport <<aggregate root>> {
+        - name : String
+    }
+
+    class AirportCode <<value object>> {
+        - code : String
+    }
+
+    class Location <<value object>> {
+        - city : String
+        - country : String
+        - latitude : double
+        - longitude : double
+    }
+
+    class Timezone <<value object>>
+    class AirportType <<value object>> {
+        - type : String
+    }
+    class AirportStatus <<value object>>
+
+    class Runway <<entity>> {
+        - designatorName : String
+        - length : double
+        - orientation : String
+    }
+
+    class AircraftCertification <<entity>> {
+        - validFrom : LocalDate
+        - validTo : LocalDate
+    }
+
+    class MediaImage <<entity>> {
+        - imageUrl : String
+        - description : String
+    }
+
+    Airport "1" *-- "1" AirportCode
+    Airport "1" *-- "1" Location
+    Airport "1" *-- "1" Timezone
+    Airport "1" *-- "1" AirportType
+    Airport "1" *-- "1" AirportStatus
+    Airport "1" *-- "1..*" Runway
+    Airport "1" *-- "1..*" AircraftCertification
+    Airport "1" *-- "0..*" MediaImage
+
+    AircraftCertification "1" --> "1" AircraftModelId : appliesToModel
+}
+
+package "Route Aggregate" {
+
+    class Route <<aggregate root>> {
+      - id : Long
+      - estimatedFlightTimeMinutes : Integer
+      - minimumRange : Integer
+      - minimumCapacity : Integer
+      - status : RouteStatus
+      - createdAt : LocalDateTime
+      - updatedAt : LocalDateTime
+    }
+
+    class RouteHistory <<entity>> {
+      - id : Long
+      - action : String
+      - description : String
+      - timestamp : LocalDateTime
+    }
+
+    enum RouteStatus {
+      ACTIVE
+      DEACTIVATED
+    }
+
+    Route "1" --> "1" AirportCode : originId
+    Route "1" --> "1" AirportCode : destinationId
+    Route "1" *-- "0..*" RouteHistory
+    Route --> RouteStatus
+}
+
+package "Aircraft Model Aggregate" {
+    class AircraftModel <<aggregate root>> {
+        - modelName : String
+    }
+
+    class AircraftModelId <<value object>>
+    class Manufacturer <<value object>>
+
+    class AircraftSpecs <<value object>> {
+        - maxCapacity : int
+        - fuelCapacity : double
+        - maxRange : double
+        - cruisingSpeed : double
+    }
+
+    class TechnicalDiagram <<entity>> {
+        - fileUrl : String
+        - diagramType : String
+    }
+
+    AircraftModel "1" *-- "1" AircraftModelId
+    AircraftModel "1" *-- "1" Manufacturer
+    AircraftModel "1" *-- "1" AircraftSpecs
+    AircraftModel "1" *-- "0..*" TechnicalDiagram
+}
+
+package "Aircraft Aggregate" {
+    class Aircraft <<aggregate root>> {
+        - manufacturingDate : LocalDate
+    }
+
+    class AircraftRegistration <<value object>> {
+        - registration : String
+    }
+
+    class SeatConfiguration <<value object>> {
+        - economySeats : int
+        - businessSeats : int
+        - totalCapacity : int
+    }
+
+    class OperationalMetrics <<value object>> {
+        - totalFlightHours : double
+        - currentRangeLimit : double
+    }
+
+    class AircraftFeatures <<value object>> {
+        - engineType : String
+        - hasWifi : boolean
+    }
+
+    class AircraftStatus <<value object>>
+
+    Aircraft "1" *-- "1" AircraftRegistration
+    Aircraft "1" *-- "1" SeatConfiguration
+    Aircraft "1" *-- "1" OperationalMetrics
+    Aircraft "1" *-- "1" AircraftFeatures
+    Aircraft "1" *-- "1" AircraftStatus
+
+    Aircraft "1" --> "1" AircraftModelId : modelId
+}
+
+package "Scheduled Flight Aggregate" {
+    class ScheduledFlight <<aggregate root>>
+
+    class FlightId <<value object>>
+
+    class FlightSchedule <<value object>> {
+        - departureLDT : LocalDateTime
+        - arrivalLDT : LocalDateTime
+    }
+
+    ScheduledFlight "1" *-- "1" FlightId
+    ScheduledFlight "1" *-- "1" FlightSchedule
+
+    ScheduledFlight "1" --> "1" RouteId : routeId
+    ScheduledFlight "1" --> "1" AircraftRegistration : aircraftRegistration
+}
+
+package "Maintenance Template Aggregate" {
+    class MaintenanceTemplate <<aggregate root>> {
+        - templateName : String
+    }
+
+    class TemplateId <<value object>>
+    class TemplateType <<value object>>
+    class Checklist <<value object>>
+
+    MaintenanceTemplate "1" *-- "1" TemplateId
+    MaintenanceTemplate "1" *-- "1" TemplateType
+    MaintenanceTemplate "1" *-- "1" Checklist
+
+    MaintenanceTemplate "1" --> "*" AircraftModelId : appliesToModels
+}
+
+package "Maintenance Record Aggregate" {
+    class MaintenanceRecord <<aggregate root>> {
+        - description : String
+        - completionNotes : String
+    }
+
+    class RecordId <<value object>>
+
+    class MaintenanceSchedule <<value object>> {
+        - startDate : LocalDateTime
+        - expectedDuration : double
+    }
+
+    class MaintenanceComponent <<value object>>
+    class MaintenanceStatus <<value object>>
+
+    MaintenanceRecord "1" *-- "1" RecordId
+    MaintenanceRecord "1" *-- "1" MaintenanceSchedule
+    MaintenanceRecord "1" *-- "1" MaintenanceComponent
+    MaintenanceRecord "1" *-- "1" MaintenanceStatus
+
+    MaintenanceRecord "1" --> "1" AircraftRegistration : targetAircraft
+    MaintenanceRecord "1" --> "1" TemplateId : usesTemplate
+}
+
+@enduml

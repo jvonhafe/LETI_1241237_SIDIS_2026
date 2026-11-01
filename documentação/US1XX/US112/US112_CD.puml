@@ -1,0 +1,55 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "US112 - Atualizar ou Desativar Rota" {
+
+    class RouteController <<RestController>> {
+      + updateRoute(id: Long, request: UpdateRouteRequest): Route
+      + deactivateRoute(id: Long): Route
+    }
+
+    class RouteService <<Service>> {
+      + updateRoute(id: Long, estimatedFlightTimeMinutes: Integer, minimumRange: Integer, minimumCapacity: Integer): Route
+      + deactivateRoute(id: Long): Route
+    }
+
+    interface RouteRepository <<Repository>> {
+      + findById(id: Long): Optional<Route>
+      + save(route: Route): Route
+    }
+
+    interface RouteHistoryRepository <<Repository>> {
+      + save(history: RouteHistory): RouteHistory
+    }
+
+    class Route <<Entity>> {
+      - id: Long
+      - estimatedFlightTimeMinutes: Integer
+      - minimumRange: Integer
+      - minimumCapacity: Integer
+      - status: RouteStatus
+      + setStatus(status: RouteStatus): void
+    }
+
+    class RouteHistory <<Entity>> {
+      - id: Long
+      - route: Route
+      - action: String
+      - description: String
+    }
+
+    enum RouteStatus {
+      ACTIVE
+      DEACTIVATED
+    }
+
+    RouteController "1" --> "1" RouteService : uses >
+    RouteService "1" --> "1" RouteRepository : uses >
+    RouteService "1" --> "1" RouteHistoryRepository : uses >
+    RouteRepository ..> Route : retrieves / stores >
+    RouteHistoryRepository ..> RouteHistory : stores >
+    RouteHistory "*" --> "1" Route : belongs to >
+    Route --> RouteStatus : has >
+}
+@enduml

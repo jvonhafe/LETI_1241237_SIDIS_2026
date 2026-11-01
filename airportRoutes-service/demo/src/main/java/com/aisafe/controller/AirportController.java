@@ -1,9 +1,9 @@
 package com.aisafe.controller;
 
-import com.aisafe.application.airport.RegisterAirportUseCase;
-import com.aisafe.application.airport.RegisterDetailedAirportUseCase;
-import com.aisafe.application.airport.UpdateAirportDetailsUseCase;
-import com.aisafe.application.airport.UpdateAirportStatusUseCase;
+import com.aisafe.application.dto.RegisterAirportUseCase;
+import com.aisafe.application.dto.RegisterDetailedAirportUseCase;
+import com.aisafe.application.dto.UpdateAirportDetailsUseCase;
+import com.aisafe.application.dto.UpdateAirportStatusUseCase;
 import com.aisafe.model.Airport;
 import com.aisafe.model.BusiestAirportDto;
 import com.aisafe.model.IataCode;
@@ -59,7 +59,6 @@ public class AirportController {
     @Value("${server.port}")
     private String serverPort;
 
-    // Lista estática de vizinhos (peers)
     private final List<String> peers = List.of("8081", "8082");
 
     //US106:registar (simples)
@@ -105,10 +104,8 @@ public class AirportController {
             if (isForwarded) {
                 throw new IllegalArgumentException("Aeroporto não encontrado em nenhuma instância: " + iata);
             }
-
-            // 3. Forwarding: Se não encontrou localmente, vai perguntar às outras instâncias
-            for (String peerPort : peers) {
-                if (!peerPort.equals(this.serverPort)) { // Garante que não pergunta a si próprio
+            for (String peerPort : peers) { //vai procurar outras instancias
+                if (!peerPort.equals(this.serverPort)) {
                     try {
                         String peerUrl = "https://localhost:" + peerPort + "/api/airports/" + iata;
 
@@ -134,8 +131,6 @@ public class AirportController {
                     }
                 }
             }
-
-            // 4. Se chegou aqui, nenhum vizinho tinha o aeroporto
             throw new IllegalArgumentException("Aeroporto não encontrado em nenhuma instância do sistema: " + iata);
         }
     }

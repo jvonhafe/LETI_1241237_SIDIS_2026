@@ -1,0 +1,100 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "ATCC" as User
+participant "RouteController" as Ctrl
+participant "RouteService" as Service
+participant "AirportRepository" as AirportRepo
+participant "RouteRepository" as RouteRepo
+database "Base de Dados" as DB
+
+User -> Ctrl : GET /routes/search?origin=&destination=
+activate Ctrl
+
+Ctrl -> Service : searchRoutes(origin, destination)
+activate Service
+
+alt origin e destination preenchidos
+    Service -> AirportRepo : findById(origin)
+    activate AirportRepo
+    AirportRepo -> DB : SELECT Airport origem
+    activate DB
+    DB --> AirportRepo : originAirport
+    deactivate DB
+    AirportRepo --> Service : originAirport
+    deactivate AirportRepo
+
+    Service -> AirportRepo : findById(destination)
+    activate AirportRepo
+    AirportRepo -> DB : SELECT Airport destino
+    activate DB
+    DB --> AirportRepo : destinationAirport
+    deactivate DB
+    AirportRepo --> Service : destinationAirport
+    deactivate AirportRepo
+
+    Service -> RouteRepo : findByOriginAirportAndDestinationAirport(origin, destination)
+    activate RouteRepo
+    RouteRepo -> DB : SELECT Routes por origem e destino
+    activate DB
+    DB --> RouteRepo : routes
+    deactivate DB
+    RouteRepo --> Service : routes
+    deactivate RouteRepo
+
+else apenas origin preenchido
+    Service -> AirportRepo : findById(origin)
+    activate AirportRepo
+    AirportRepo -> DB : SELECT Airport origem
+    activate DB
+    DB --> AirportRepo : originAirport
+    deactivate DB
+    AirportRepo --> Service : originAirport
+    deactivate AirportRepo
+
+    Service -> RouteRepo : findByOriginAirport(origin)
+    activate RouteRepo
+    RouteRepo -> DB : SELECT Routes por origem
+    activate DB
+    DB --> RouteRepo : routes
+    deactivate DB
+    RouteRepo --> Service : routes
+    deactivate RouteRepo
+
+else apenas destination preenchido
+    Service -> AirportRepo : findById(destination)
+    activate AirportRepo
+    AirportRepo -> DB : SELECT Airport destino
+    activate DB
+    DB --> AirportRepo : destinationAirport
+    deactivate DB
+    AirportRepo --> Service : destinationAirport
+    deactivate AirportRepo
+
+    Service -> RouteRepo : findByDestinationAirport(destination)
+    activate RouteRepo
+    RouteRepo -> DB : SELECT Routes por destino
+    activate DB
+    DB --> RouteRepo : routes
+    deactivate DB
+    RouteRepo --> Service : routes
+    deactivate RouteRepo
+
+else sem filtros
+    Service -> RouteRepo : findAll()
+    activate RouteRepo
+    RouteRepo -> DB : SELECT todas as Routes
+    activate DB
+    DB --> RouteRepo : routes
+    deactivate DB
+    RouteRepo --> Service : routes
+    deactivate RouteRepo
+end
+
+Service --> Ctrl : routes
+deactivate Service
+
+Ctrl --> User : 200 OK (Route List)
+deactivate Ctrl
+@enduml

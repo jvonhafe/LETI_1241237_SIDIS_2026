@@ -1,0 +1,12 @@
+@startuml
+autonumber
+actor "Backoffice User" as Admin
+participant "Sistema Aisafe" as System
+
+activate Admin
+Admin -> System: Solicita o estado de disponibilidade da frota em tempo real
+activate System
+System --> Admin: Devolve os totais (operacionais, manutenção, taxa) e o estado individual de cada aeronave
+deactivate System
+deactivate Admin
+@enduml

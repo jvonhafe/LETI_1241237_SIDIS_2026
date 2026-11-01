@@ -1,0 +1,7 @@
+@startuml
+autonumber
+actor "User" as User
+participant "AISafe System" as System
+User -> System : Solicita custos de manutenção por modelo
+System --> User : Devolve resumo de custos
+@enduml

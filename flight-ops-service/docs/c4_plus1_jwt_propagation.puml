@@ -1,0 +1,30 @@
+@startuml c4_plus1_jwt_propagation
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Dynamic.puml
+
+title "C4 Dynamic Diagram: P2P Aggregation & JWT Propagation"
+
+Person(admin, "Operador ATCC / Cliente")
+
+Container_Boundary(flight_ops, "Flight Operations Service (Porta 8083)") {
+    Component(filter, "JwtAuthenticationFilter", "Filtro de Segurança")
+    Component(controller, "ScheduledFlightController", "Controlador REST")
+    Component(restTemplate, "RestTemplate", "Cliente HTTP P2P")
+}
+
+Container(aircraft, "Aircraft Service (8081)", "Microsserviço", "Requer JWT")
+Container(routes, "Airports & Routes (8082)", "Microsserviço", "Requer JWT")
+
+Rel_R(admin, filter, "1. GET /api/flights/{id} (Bearer JWT)")
+Rel_D(filter, controller, "2. Valida assinatura e aprova contexto")
+Rel_D(controller, restTemplate, "3. Inicia lógica de agregação P2P")
+
+Rel_R(restTemplate, aircraft, "4. Pede Aeronave (Injeta Header JWT)")
+Rel_L(aircraft, restTemplate, "5. Devolve detalhes da aeronave")
+
+Rel_R(restTemplate, routes, "6. Pede Rota (Injeta Header JWT)")
+Rel_L(routes, restTemplate, "7. Devolve detalhes da rota e aeroportos")
+
+Rel_U(restTemplate, controller, "8. Compila dados parciais num DTO")
+Rel_U(controller, admin, "9. Devolve voo 100% completo (200 OK)")
+
+@enduml

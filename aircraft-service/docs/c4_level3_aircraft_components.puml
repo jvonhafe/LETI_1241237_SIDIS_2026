@@ -1,0 +1,35 @@
+@startuml c4_level3_aircraft_components
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title "C4 Level 3: Component Diagram - Aircraft & Maintenance Service"
+
+Container_Boundary(aircraft_service, "Aircraft & Maintenance Service (Porta 8081)") {
+    Component(security_filter, "JwtAuthenticationFilter", "Spring Security", "Interceta pedidos REST, valida a assinatura JWT e rejeita chamadas não autorizadas (403 Forbidden).")
+
+    Component(aircraft_controller, "AircraftController", "Spring REST Controller", "Expõe os endpoints para gestão e agregação de dados de aeronaves.")
+    Component(maintenance_controller, "MaintenanceRecordController", "Spring REST Controller", "Expõe endpoints para as US de manutenção.")
+
+    Component(register_uc, "RegisterAircraftUseCase", "Spring Service", "Lógica de negócio para registo de novos aviões na frota.")
+    Component(query_uc, "AircraftQueryUseCase", "Spring Service", "Lógica para devolver detalhes completos da aeronave.")
+
+    Component(aircraft_repo, "AircraftRepository", "Spring Data JPA", "Interface de abstração para operações na base de dados de aeronaves.")
+    Component(maintenance_repo, "MaintenanceRecordRepository", "Spring Data JPA", "Abstração para persistência de registos de manutenção.")
+}
+
+Container(flight_ops, "Flight Operations Service", "Java", "Cliente P2P agregador.")
+ContainerDb(db, "Aircraft Database", "Relational DB", "Estado guardado.")
+
+Rel(flight_ops, security_filter, "GET /api/aircraft/{id}", "REST/JWT")
+Rel(security_filter, aircraft_controller, "Repassa pedido válido")
+
+Rel(aircraft_controller, register_uc, "Usa")
+Rel(aircraft_controller, query_uc, "Usa")
+Rel(maintenance_controller, maintenance_repo, "Lê/Escreve")
+
+Rel(register_uc, aircraft_repo, "Lê/Escreve")
+Rel(query_uc, aircraft_repo, "Lê")
+
+Rel(aircraft_repo, db, "Lê e Escreve", "JDBC")
+Rel(maintenance_repo, db, "Lê e Escreve", "JDBC")
+
+@enduml

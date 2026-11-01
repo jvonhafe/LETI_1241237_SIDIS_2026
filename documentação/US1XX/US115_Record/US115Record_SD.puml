@@ -1,0 +1,52 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "Maintenance Technician" as User
+participant "MaintenanceRecordController" as Ctrl
+participant "MaintenanceService" as Service
+participant "AircraftRepository" as AircraftRepo
+participant "MaintenanceTemplateRepository" as TemplateRepo
+participant "MaintenanceRecordRepository" as RecordRepo
+database "Base de Dados" as DB
+
+User -> Ctrl : POST /api/maintenance-records (MaintenanceRecord)
+activate Ctrl
+
+Ctrl -> Service : createRecord(record)
+activate Service
+
+Service -> AircraftRepo : findById(record.getAircraftRegistration())
+activate AircraftRepo
+AircraftRepo -> DB : SELECT aircraft
+DB --> AircraftRepo : aircraft
+AircraftRepo --> Service : aircraft
+deactivate AircraftRepo
+
+Service -> TemplateRepo : findById(record.getTemplateId())
+activate TemplateRepo
+TemplateRepo -> DB : SELECT maintenance template
+DB --> TemplateRepo : template
+TemplateRepo --> Service : template
+deactivate TemplateRepo
+
+Service -> AircraftRepo : save(aircraft)
+activate AircraftRepo
+AircraftRepo -> DB : UPDATE aircraft status
+DB --> AircraftRepo : success
+AircraftRepo --> Service : aircraft
+deactivate AircraftRepo
+
+Service -> RecordRepo : save(record)
+activate RecordRepo
+RecordRepo -> DB : INSERT maintenance record
+DB --> RecordRepo : success
+RecordRepo --> Service : savedRecord
+deactivate RecordRepo
+
+Service --> Ctrl : savedRecord
+deactivate Service
+
+Ctrl --> User : Created (MaintenanceRecord)
+deactivate Ctrl
+@enduml

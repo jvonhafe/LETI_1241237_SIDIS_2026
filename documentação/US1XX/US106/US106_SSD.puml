@@ -1,0 +1,12 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "Backofficer Operator" as User
+participant "System" as Sys
+
+User -> Sys : Inicia o registo de um novo aeroporto (envia dados)
+activate Sys
+Sys --> User : Confirma o registo e devolve os dados criados (Created)
+deactivate Sys
+@enduml

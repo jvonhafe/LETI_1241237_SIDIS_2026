@@ -1,0 +1,12 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "ATCC" as User
+participant "System" as Sys
+
+User -> Sys : Pesquisa rotas por origem, destino ou ambos
+activate Sys
+Sys --> User : Devolve lista de rotas encontradas
+deactivate Sys
+@enduml

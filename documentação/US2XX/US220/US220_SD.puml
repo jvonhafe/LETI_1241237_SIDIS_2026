@@ -1,0 +1,21 @@
+@startuml
+autonumber
+actor "User" as User
+participant "MaintenanceController" as Ctrl
+participant "QueryService" as Service
+participant "Repository" as Repo
+
+User -> Ctrl : GET /api/maintenance/costs-per-model
+activate Ctrl
+note right of Ctrl: O Service ou Repository agrupa\nos custos por modelo.
+Ctrl -> Service : getCostsPerModel()
+activate Service
+Service -> Repo : getMaintenanceCostPerModel()
+activate Repo
+Repo --> Service : List<Map<String, Object>>
+deactivate Repo
+Service --> Ctrl : List<Map<String, Object>>
+deactivate Service
+Ctrl --> User : 200 OK
+deactivate Ctrl
+@enduml

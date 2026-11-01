@@ -1,0 +1,34 @@
+@startuml
+autonumber
+skinparam maxMessageSize 150
+
+actor "ATCC/Backoffice" as Admin
+participant "AirportController" as Ctrl
+participant "IataCode" as IATA <<Value Object>>
+participant "AirportRepository" as Repo
+database "Base de Dados" as DB
+
+Admin -> Ctrl : GET /api/airports/{iata}
+activate Ctrl
+
+note right of Ctrl: Instancia o Value Object para\nvalidar a regra das 3 letras (Fail-Fast)
+Ctrl -> IATA ** : create(iata)
+activate IATA
+IATA --> Ctrl : iataCode
+deactivate IATA
+
+Ctrl -> Repo : findById(iataCode)
+activate Repo
+Repo -> DB : SELECT * FROM airport WHERE iata_code = ?
+activate DB
+DB --> Repo : Airport Record
+deactivate DB
+Repo --> Ctrl : Optional<Airport>
+deactivate Repo
+
+note right of Ctrl: O Controller envolve o Airport\nnum EntityModel e adiciona\nos links HATEOAS
+Ctrl -> Ctrl : EntityModel.of(airport, links...)
+
+Ctrl --> Admin : 200 OK (Airport Data + Links)
+deactivate Ctrl
+@enduml

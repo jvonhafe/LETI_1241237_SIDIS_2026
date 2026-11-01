@@ -1,0 +1,12 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "Maintenance Technician" as User
+participant "System" as Sys
+
+User -> Sys : Cria um template de manutenção
+activate Sys
+Sys --> User : Confirma o template e devolve os dados criados
+deactivate Sys
+@enduml

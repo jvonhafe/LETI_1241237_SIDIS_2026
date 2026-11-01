@@ -1,0 +1,40 @@
+@startuml
+class AircraftController {
+  + getFleetAvailability(): ResponseEntity<FleetAvailabilityDTO>
+}
+
+class GetFleetAvailabilityUseCase {
+  + execute(): FleetAvailabilityDTO
+}
+
+interface AircraftRepository {
+  + findAll(): List<Aircraft>
+}
+
+class Aircraft {
+  - registrationNumber: AircraftRegistration
+  - modelId: String
+  - status: String
+}
+
+class FleetAvailabilityDTO {
+  - totalAircraft: long
+  - availableAircraft: long
+  - underMaintenanceAircraft: long
+  - availabilityRate: double
+  - aircraftList: List<AircraftStatusDTO>
+}
+
+class AircraftStatusDTO {
+  - registration: String
+  - modelId: String
+  - status: String
+}
+
+AircraftController --> GetFleetAvailabilityUseCase : uses
+AircraftController ..> FleetAvailabilityDTO : returns
+GetFleetAvailabilityUseCase --> AircraftRepository : uses
+GetFleetAvailabilityUseCase ..> FleetAvailabilityDTO : creates
+FleetAvailabilityDTO *-- AircraftStatusDTO : contains
+AircraftRepository --> Aircraft : stores
+@enduml

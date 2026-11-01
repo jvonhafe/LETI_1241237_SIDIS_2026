@@ -1,0 +1,52 @@
+@startuml
+class AircraftController {
+  + getCompatibleRoutes(registration: String): ResponseEntity<List<Route>>
+}
+
+class GetCompatibleRoutesUseCase {
+  + execute(registrationNumber: String): List<Route>
+}
+
+interface AircraftRepository {
+  + findById(id: AircraftRegistration): Optional<Aircraft>
+}
+
+interface AircraftModelRepository {
+  + findById(id: String): Optional<AircraftModel>
+}
+
+interface RouteRepository {
+  + findAll(): List<Route>
+}
+
+class AircraftRegistration {
+  - registration: String
+}
+
+class Aircraft {
+  - registrationNumber: AircraftRegistration
+  - modelId: String
+}
+
+class AircraftModel {
+  - modelId: String
+  - maxCapacity: Capacity
+  - maxRange: double
+}
+
+class Route {
+  - id: Long
+  - minimumRange: int
+  - minimumCapacity: int
+  - status: String
+}
+
+AircraftController --> GetCompatibleRoutesUseCase : uses
+GetCompatibleRoutesUseCase --> AircraftRepository : uses
+GetCompatibleRoutesUseCase --> AircraftModelRepository : uses
+GetCompatibleRoutesUseCase --> RouteRepository : uses
+GetCompatibleRoutesUseCase ..> AircraftRegistration : creates
+AircraftRepository --> Aircraft : stores
+AircraftModelRepository --> AircraftModel : stores
+RouteRepository --> Route : stores
+@enduml

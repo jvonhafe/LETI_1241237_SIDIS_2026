@@ -1,0 +1,7 @@
+@startuml
+autonumber
+actor "User" as User
+participant "AISafe System" as System
+User -> System : Solicita tempo médio de turnaround
+System --> User : Devolve valores calculados
+@enduml

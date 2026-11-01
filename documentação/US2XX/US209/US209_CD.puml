@@ -1,0 +1,31 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+    class RouteController <<RestController>> {
+      + getRoutesByAirport(airportIata: String): ResponseEntity
+    }
+
+    interface RouteRepository <<Repository>> {
+      + findRoutesByOriginOrDestination(airport: IataCode): List<Route>
+    }
+
+    class Route <<Aggregate Root>> {
+      - minRange: double
+      - minCapacity: int
+      - isActive: boolean
+    }
+
+    class IataCode <<Value Object>> {
+      - code: String
+    }
+
+    RouteController "1" --> "1" RouteRepository : uses >
+    RouteController ..> IataCode : creates >
+    RouteController ..> Route : handles >
+
+    RouteRepository ..> Route : retrieves >
+
+    Route "1" --> "2" IataCode : origin/destination >
+
+@enduml

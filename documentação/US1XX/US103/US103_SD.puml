@@ -1,0 +1,24 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "User/ATCC" as User
+participant "AircraftController" as Ctrl
+participant "AircraftRepository" as Repo
+database "Base de Dados" as DB
+
+User -> Ctrl : GET /api/aircraft/{registration}
+activate Ctrl
+
+Ctrl -> Repo : findById(registration)
+activate Repo
+Repo -> DB : SELECT (procura por matrícula)
+activate DB
+DB --> Repo : resultado (dados da aeronave)
+deactivate DB
+Repo --> Ctrl : Optional<Aircraft>
+deactivate Repo
+
+Ctrl --> User : OK (Aircraft Details)
+deactivate Ctrl
+@enduml

@@ -1,0 +1,12 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "ATCC" as User
+participant "System" as Sys
+
+User -> Sys : Inicia criação de rota de voo\n(origem, destino, tempo estimado, range, capacidade)
+activate Sys
+Sys --> User : Confirma criação da rota e devolve dados criados (Created)
+deactivate Sys
+@enduml

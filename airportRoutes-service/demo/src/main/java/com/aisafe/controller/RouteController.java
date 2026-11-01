@@ -1,6 +1,6 @@
 package com.aisafe.controller;
 
-import com.aisafe.application.route.*;
+import com.aisafe.application.usecase.*;
 import com.aisafe.model.IataCode;
 import com.aisafe.model.Route;
 import com.aisafe.model.RouteHistory;

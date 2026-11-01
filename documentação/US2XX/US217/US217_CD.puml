@@ -1,0 +1,26 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+class MaintenanceRecordController <<RestController>> {
+    + scheduleMaintenance(record: MaintenanceRecord): ResponseEntity
+}
+
+class ScheduleMaintenanceUseCase <<Service>> {
+    + execute(record: MaintenanceRecord): MaintenanceRecord
+}
+
+interface MaintenanceRecordRepository <<Repository>> {
+    + save(record: MaintenanceRecord): MaintenanceRecord
+}
+
+class MaintenanceRecord <<Aggregate Root>> {
+    - aircraftRegistration: String
+    - component: String
+    - status: String
+}
+
+MaintenanceRecordController "1" --> "1" ScheduleMaintenanceUseCase : uses >
+ScheduleMaintenanceUseCase "1" --> "1" MaintenanceRecordRepository : saves >
+MaintenanceRecordRepository ..> MaintenanceRecord : persists >
+@enduml

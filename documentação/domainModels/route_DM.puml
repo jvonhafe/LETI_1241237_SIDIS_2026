@@ -1,0 +1,40 @@
+@startuml
+title Route Domain Model
+
+class Route <<Entity>> {
+  id
+  estimatedFlightTimeMinutes
+  minimumRange
+  minimumCapacity
+  status
+  createdAt
+  updatedAt
+}
+
+class RouteHistory <<Entity>> {
+  id
+  action
+  description
+  timestamp
+}
+
+class Airport <<Entity>> {
+  iataCode
+  name
+  city
+  country
+  timezone
+  status
+}
+
+enum RouteStatus {
+  ACTIVE
+  DEACTIVATED
+}
+
+Route "many" --> "1" Airport : origin
+Route "many" --> "1" Airport : destination
+Route "1" --> "many" RouteHistory
+Route --> RouteStatus
+
+@enduml

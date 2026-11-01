@@ -1,0 +1,12 @@
+@startuml
+autonumber
+actor "Backoffice User" as Admin
+participant "Sistema Aisafe" as System
+
+activate Admin
+Admin -> System: Pede para consultar as rotas compatíveis com uma aeronave específica (matrícula)
+activate System
+System --> Admin: Devolve a lista de rotas ativas compatíveis com o alcance e capacidade da aeronave
+deactivate System
+deactivate Admin
+@enduml

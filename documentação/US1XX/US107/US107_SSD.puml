@@ -1,0 +1,12 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "ATCC" as User
+participant "System" as Sys
+
+User -> Sys : Solicita os detalhes de um aeroporto ou a lista total
+activate Sys
+Sys --> User : Devolve a informação solicitada
+deactivate Sys
+@enduml

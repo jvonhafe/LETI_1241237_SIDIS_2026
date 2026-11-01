@@ -1,0 +1,12 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "User/Operator" as User
+participant "System" as Sys
+
+User -> Sys : Pesquisa aeronaves aplicando filtros dinâmicos
+activate Sys
+Sys --> User : Devolve a lista de aeronaves correspondentes (OK)
+deactivate Sys
+@enduml

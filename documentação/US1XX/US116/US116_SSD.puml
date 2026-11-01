@@ -1,0 +1,12 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "Maintenance Technician" as User
+participant "System" as Sys
+
+User -> Sys : Consulta os registos de manutenção de uma aeronave
+activate Sys
+Sys --> User : Devolve a lista de registos de manutenção
+deactivate Sys
+@enduml

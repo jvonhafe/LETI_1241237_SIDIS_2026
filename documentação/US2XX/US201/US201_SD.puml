@@ -1,0 +1,37 @@
+@startuml
+autonumber
+actor "Backoffice User" as Admin
+participant "AircraftModelController" as Ctrl
+participant "UpdateAircraftModelUseCase" as UseCase
+participant "AircraftModelRepository" as Repo
+participant "model : AircraftModel" as Model
+
+activate Admin
+Admin -> Ctrl: PUT /api/aircraft-models/{modelId} (UpdateAircraftModelDTO)
+activate Ctrl
+
+Ctrl -> UseCase: execute(modelId, updateDTO)
+activate UseCase
+
+UseCase -> Repo: findById(modelId)
+activate Repo
+Repo --> UseCase: model
+deactivate Repo
+
+UseCase -> Model: setMaxCapacity(updateDTO.maxCapacity)
+UseCase -> Model: setFuelCapacity(updateDTO.fuelCapacity)
+UseCase -> Model: setMaxRange(updateDTO.maxRange)
+UseCase -> Model: setCruisingSpeed(updateDTO.cruisingSpeed)
+
+UseCase -> Repo: save(model)
+activate Repo
+Repo --> UseCase: updatedModel
+deactivate Repo
+
+UseCase --> Ctrl: updatedModel
+deactivate UseCase
+
+Ctrl --> Admin: 200 OK (AircraftModel)
+deactivate Ctrl
+deactivate Admin
+@enduml

@@ -1,0 +1,27 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "US105 - Atualizar Estado Operacional" {
+
+    class AircraftController <<RestController>> {
+      + updateStatus(registration, newStatus): Aircraft
+    }
+
+    interface AircraftRepository <<Repository>> {
+      + findById(id: String): Optional<Aircraft>
+      + save(aircraft: Aircraft): Aircraft
+    }
+
+    class Aircraft <<Entity>> {
+      - registrationNumber: String
+      - status: String
+      - version: Long
+      + setStatus(status: String): void
+    }
+
+    AircraftController "1" --> "1" AircraftRepository : uses >
+    AircraftController ..> Aircraft : handles >
+    AircraftRepository ..> Aircraft : stores >
+}
+@enduml

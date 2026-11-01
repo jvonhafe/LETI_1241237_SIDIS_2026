@@ -1,0 +1,12 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "Backoffice Operator" as User
+participant "System" as Sys
+
+User -> Sys : Inicia o registo de uma nova aeronave (envia dados)
+activate Sys
+Sys --> User : Confirma o registo e devolve a aeronave física criada (Created)
+deactivate Sys
+@enduml

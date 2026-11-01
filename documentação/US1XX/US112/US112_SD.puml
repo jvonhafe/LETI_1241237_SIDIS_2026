@@ -1,0 +1,89 @@
+@startuml
+autonumber
+skinparam packageStyle rectangle
+
+actor "ATCC / Backoffice Operator" as User
+participant "RouteController" as Ctrl
+participant "RouteService" as Service
+participant "RouteRepository" as RouteRepo
+participant "RouteHistoryRepository" as HistoryRepo
+database "Base de Dados" as DB
+
+User -> Ctrl : PUT /routes/{id} (UpdateRoute Data)
+activate Ctrl
+
+Ctrl -> Service : updateRoute(id, data)
+activate Service
+
+Service -> RouteRepo : findById(id)
+activate RouteRepo
+RouteRepo -> DB : SELECT Route por ID
+activate DB
+DB --> RouteRepo : route
+deactivate DB
+RouteRepo --> Service : route
+deactivate RouteRepo
+
+Service -> RouteRepo : save(route atualizada)
+activate RouteRepo
+RouteRepo -> DB : UPDATE Route
+activate DB
+DB --> RouteRepo : success
+deactivate DB
+RouteRepo --> Service : updatedRoute
+deactivate RouteRepo
+
+Service -> HistoryRepo : save(RouteHistory UPDATED)
+activate HistoryRepo
+HistoryRepo -> DB : INSERT RouteHistory
+activate DB
+DB --> HistoryRepo : success
+deactivate DB
+HistoryRepo --> Service : savedHistory
+deactivate HistoryRepo
+
+Service --> Ctrl : updatedRoute
+deactivate Service
+
+Ctrl --> User : 200 OK (Route atualizada)
+deactivate Ctrl
+
+User -> Ctrl : PATCH /routes/{id}/deactivate
+activate Ctrl
+
+Ctrl -> Service : deactivateRoute(id)
+activate Service
+
+Service -> RouteRepo : findById(id)
+activate RouteRepo
+RouteRepo -> DB : SELECT Route por ID
+activate DB
+DB --> RouteRepo : route
+deactivate DB
+RouteRepo --> Service : route
+deactivate RouteRepo
+
+Service -> RouteRepo : save(route desativada)
+activate RouteRepo
+RouteRepo -> DB : UPDATE Route status = DEACTIVATED
+activate DB
+DB --> RouteRepo : success
+deactivate DB
+RouteRepo --> Service : deactivatedRoute
+deactivate RouteRepo
+
+Service -> HistoryRepo : save(RouteHistory DEACTIVATED)
+activate HistoryRepo
+HistoryRepo -> DB : INSERT RouteHistory
+activate DB
+DB --> HistoryRepo : success
+deactivate DB
+HistoryRepo --> Service : savedHistory
+deactivate HistoryRepo
+
+Service --> Ctrl : deactivatedRoute
+deactivate Service
+
+Ctrl --> User : 200 OK (Route desativada)
+deactivate Ctrl
+@enduml

@@ -1,0 +1,30 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "US117 - Ver Total de Horas de Manutenção" {
+
+    class MaintenanceRecordController <<RestController>> {
+      + totalHoursForAircraft(registration: String): Map<String, Object>
+      + totalHoursForFleet(): Map<String, Object>
+    }
+
+    class MaintenanceService <<Service>> {
+      + totalHoursForAircraft(registration: String): Double
+      + totalHoursForFleet(): Double
+    }
+
+    interface AircraftRepository <<Repository>> {
+      + existsById(id: String): boolean
+    }
+
+    interface MaintenanceRecordRepository <<Repository>> {
+      + totalMaintenanceHoursByAircraft(registration: String): Double
+      + totalMaintenanceHoursForFleet(): Double
+    }
+
+    MaintenanceRecordController "1" --> "1" MaintenanceService : uses >
+    MaintenanceService "1" --> "1" AircraftRepository : uses >
+    MaintenanceService "1" --> "1" MaintenanceRecordRepository : uses >
+}
+@enduml

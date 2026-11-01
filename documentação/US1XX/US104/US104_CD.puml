@@ -1,0 +1,25 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "US104 - Pesquisar Aeronaves" {
+
+    class AircraftController <<RestController>> {
+      + searchAircrafts(modelId, status, year): List<Aircraft>
+    }
+
+    interface AircraftRepository <<Repository>> {
+      + searchAircrafts(modelId, status, year): List<Aircraft>
+    }
+
+    class Aircraft <<Entity>> {
+      - registrationNumber: String
+      - modelId: String
+      - manufacturingDate: LocalDate
+      - status: String
+    }
+
+    AircraftController "1" --> "1" AircraftRepository : uses >
+    AircraftController ..> Aircraft : handles >
+}
+@enduml

@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
     @Bean
     public Queue helloQueue() {
-        // Mudar de false para true!
         return new Queue("hello-queue", true);
     }
 }

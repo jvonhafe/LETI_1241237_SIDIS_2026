@@ -1,0 +1,59 @@
+@startuml
+skinparam classAttributeIconSize 0
+hide empty methods
+hide empty attributes
+title Domain Model - Maintenance
+
+
+
+    class MaintenanceRecord <<Aggregate Root>> {
+        - scheduledDate : LocalDate
+        - technician : String
+    }
+
+    class RecordId <<Value Object>> {
+        - id : Long
+    }
+
+    enum RecordStatus <<Value Object>> {
+        SCHEDULED
+        IN_PROGRESS
+        COMPLETED
+        CANCELLED
+    }
+
+    class MaintenanceTemplate <<Aggregate Root>> {
+        - name : String
+    }
+
+    class TemplateId <<Value Object>> {
+        - id : String
+    }
+
+    enum MaintenanceType <<Value Object>> {
+        SCHEDULED
+        UNSCHEDULED
+        EMERGENCY
+    }
+
+    class ChecklistItem <<Value Object>> {
+        - item : String
+        - required : Boolean
+    }
+
+    class AircraftRegistration <<Value Object>> {
+        - code : String
+    }
+
+    ' Relacionamentos do Registo
+    MaintenanceRecord "1" -up-> "1" RecordId : identified by >
+    MaintenanceRecord "1" --> "1" RecordStatus : has >
+    MaintenanceRecord "*" -right-> "1" TemplateId : refers to >
+    MaintenanceRecord "*" --> "1" AircraftRegistration : applies to >
+
+    ' Relacionamentos do Template
+    MaintenanceTemplate "1" -up-> "1" TemplateId : identified by >
+    MaintenanceTemplate "1" -left-> "1" MaintenanceType : categorised by >
+    MaintenanceTemplate "1" *-- "*" ChecklistItem : contains >
+
+@enduml
