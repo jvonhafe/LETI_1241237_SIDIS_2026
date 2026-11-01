@@ -6,12 +6,20 @@ import com.aisafe.model.Aircraft;
 import com.aisafe.model.AircraftRegistration;
 import com.aisafe.repository.AircraftRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/aircraft")
@@ -19,6 +27,12 @@ public class AircraftController {
 
     private final RegisterAircraftUseCase registerUseCase;
     private final AircraftRepository aircraftRepository;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Value("${peer.node.url:http://localhost:8084/api}")
+    private String peerNodeUrl;
 
     public AircraftController(RegisterAircraftUseCase registerUseCase, AircraftRepository aircraftRepository) {
         this.registerUseCase = registerUseCase;
@@ -32,13 +46,50 @@ public class AircraftController {
         return registerUseCase.execute(dto.registrationNumber, dto.modelId, dto.manufacturingDate, dto.status);
     }
 
-    @Operation(summary = "Obter Detalhes da Aeronave")
+    @Operation(summary = "Obter Detalhes da Aeronave (com P2P Forwarding)")
     @GetMapping("/{registration}")
     @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE', 'ATCC')")
-    public Aircraft getAircraftDetails(@PathVariable String registration) {
+    public ResponseEntity<?> getAircraftDetails(
+            @PathVariable String registration,
+            @RequestHeader(value = "Authorization", required = false) String token,
+            @RequestHeader(value = "X-Forwarded-Peer", defaultValue = "false") boolean isForwarded) {
+
         AircraftRegistration regVo = new AircraftRegistration(registration);
-        return aircraftRepository.findById(regVo)
-                .orElseThrow(() -> new AircraftNotFoundException(registration));
+        Optional<Aircraft> aircraftLocal = aircraftRepository.findById(regVo);
+
+        if (aircraftLocal.isPresent()) {
+            return ResponseEntity.ok(aircraftLocal.get());
+        }
+
+        if (isForwarded) {
+            throw new AircraftNotFoundException(registration);
+        }
+
+        try {
+            System.out.println("Aeronave " + registration + " não encontrada. A iniciar P2P Forwarding para: " + peerNodeUrl);
+
+            HttpHeaders headers = new HttpHeaders();
+            if (token != null) {
+                headers.set("Authorization", token);
+            }
+            headers.set("X-Forwarded-Peer", "true");
+
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<Aircraft> peerResponse = restTemplate.exchange(
+                    peerNodeUrl + "/aircraft/" + registration,
+                    HttpMethod.GET,
+                    entity,
+                    Aircraft.class
+            );
+
+            return ResponseEntity.ok(peerResponse.getBody());
+
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new AircraftNotFoundException(registration);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erro no P2P Forwarding: " + e.getMessage());
+        }
     }
 
     @Operation(summary = "Pesquisar Aeronaves")
@@ -86,7 +137,7 @@ public class AircraftController {
     @Operation(summary = "Fornecer capacidades da aeronave para cálculo de rotas no serviço externo")
     @GetMapping("/{registration}/specs")
     @PreAuthorize("hasAnyRole('ADMIN', 'ATCC')")
-    public ResponseEntity<AircraftSpecsDTO> getAircraftSpecs(@PathVariable String registration) {
+    public ResponseEntity<?> getAircraftSpecs(@PathVariable String registration) {
         AircraftRegistration regVo = new AircraftRegistration(registration);
 
         Aircraft aircraft = aircraftRepository.findById(regVo)
@@ -94,13 +145,11 @@ public class AircraftController {
 
         AircraftSpecsDTO specs = new AircraftSpecsDTO(
                 aircraft.getRegistrationNumber().getRegistration(),
-                150, // model.getMaxCapacity().getValue()
-                3500.0, // model.getMaxRange()
-                800.0 // model.getCruisingSpeed()
+                150,
+                3500.0,
+                800.0
         );
 
         return ResponseEntity.ok(specs);
     }
-
-
 }
