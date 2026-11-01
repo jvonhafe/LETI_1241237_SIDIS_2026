@@ -129,7 +129,7 @@ class ScheduledFlightControllerTest {
         when(scheduledFlightRepository.findById("TP123")).thenReturn(Optional.of(voo));
 
         Object mockAircraftDetails = Map.of("id", "AC-01", "model", "Boeing 737");
-        when(restTemplate.getForObject(eq("http://localhost:8081/api/aircraft/AC-01"), eq(Object.class)))
+        when(restTemplate.getForObject(eq("https://localhost:8081/api/aircraft/AC-01"), eq(Object.class)))
                 .thenReturn(mockAircraftDetails);
 
         mockMvc.perform(get("/api/flights/TP123/details"))
