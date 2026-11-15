@@ -25,6 +25,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -56,10 +57,8 @@ public class AirportController {
     @Autowired
     private RestTemplate restTemplate;
 
-    @Value("${server.port}")
-    private String serverPort;
-
-    private final List<String> peers = List.of("8081", "8082");
+    @Value("${airports.peers.urls:}")
+    private String peersCsv;
 
     //US106:registar (simples)
     @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE')")
@@ -82,57 +81,49 @@ public class AirportController {
     }
 
     // US107: Obter por ID (COM FORWARDING)
+    // US107: Obter por ID (COM FORWARDING P2P)
     @GetMapping("/{iata}")
     public EntityModel<Airport> getAirportById(
             @PathVariable String iata,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestHeader(value = "X-Forwarded", required = false, defaultValue = "false") boolean isForwarded) {
 
         IataCode searchId = new IataCode(iata);
+        Optional<Airport> local = airportRepository.findById(searchId);
 
-        try {
-            // 1. Tenta procurar na base de dados LOCAL da instância
-            Airport airport = airportRepository.findById(searchId)
-                    .orElseThrow(() -> new IllegalArgumentException("Aeroporto não encontrado localmente"));
-
+        if (local.isPresent()) {
+            Airport airport = local.get();
             return EntityModel.of(airport,
-                    linkTo(methodOn(AirportController.class).getAirportById(airport.getIataCode().getCode(), isForwarded)).withSelfRel(),
-                    linkTo(methodOn(AirportController.class).getAllAirports()).withRel("todos-aeroportos")
-            );
-
-        } catch (IllegalArgumentException e) {
-            // 2. Prevenção de loop infinito: Se não encontrou e o pedido já era um reencaminhamento, para aqui.
-            if (isForwarded) {
-                throw new IllegalArgumentException("Aeroporto não encontrado em nenhuma instância: " + iata);
-            }
-            for (String peerPort : peers) { //vai procurar outras instancias
-                if (!peerPort.equals(this.serverPort)) {
-                    try {
-                        String peerUrl = "https://localhost:" + peerPort + "/api/airports/" + iata;
-
-                        // Adiciona o cabeçalho X-Forwarded=true para avisar a outra instância que é um reencaminhamento
-                        HttpHeaders headers = new HttpHeaders();
-                        headers.add("X-Forwarded", "true");
-                        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-                        ResponseEntity<Airport> response = restTemplate.exchange(
-                                peerUrl,
-                                HttpMethod.GET,
-                                entity,
-                                Airport.class
-                        );
-
-                        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                            System.out.println("-> Sucesso: Aeroporto " + iata + " encontrado na instância " + peerPort);
-                            return EntityModel.of(response.getBody(),
-                                    linkTo(methodOn(AirportController.class).getAirportById(response.getBody().getIataCode().getCode(), false)).withSelfRel());
-                        }
-                    } catch (Exception ex) {
-                        System.out.println("-> Vizinho na porta " + peerPort + " também não tem o aeroporto " + iata);
-                    }
-                }
-            }
-            throw new IllegalArgumentException("Aeroporto não encontrado em nenhuma instância do sistema: " + iata);
+                    linkTo(methodOn(AirportController.class).getAirportById(iata, null, isForwarded)).withSelfRel(),
+                    linkTo(methodOn(AirportController.class).getAllAirports()).withRel("todos-aeroportos"));
         }
+
+        // Já é um reencaminhamento: não voltamos a perguntar a ninguém (evita ciclos)
+        if (isForwarded) {
+            throw new IllegalArgumentException("Aeroporto não encontrado em nenhuma instância: " + iata);
+        }
+
+        for (String peer : peersCsv.split(",")) {
+            if (peer.isBlank()) continue;
+            try {
+                HttpHeaders headers = new HttpHeaders();
+                headers.add("X-Forwarded", "true");
+                if (authHeader != null) {
+                    headers.set(HttpHeaders.AUTHORIZATION, authHeader);
+                }
+                ResponseEntity<Airport> response = restTemplate.exchange(
+                        peer.trim() + "/api/airports/" + iata,
+                        HttpMethod.GET, new HttpEntity<>(headers), Airport.class);
+
+                if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                    return EntityModel.of(response.getBody(),
+                            linkTo(methodOn(AirportController.class).getAirportById(iata, null, false)).withSelfRel());
+                }
+            } catch (Exception ex) {
+                System.out.println("-> Vizinho " + peer + " não respondeu ou não tem " + iata + ": " + ex.getMessage());
+            }
+        }
+        throw new IllegalArgumentException("Aeroporto não encontrado em nenhuma instância do sistema: " + iata);
     }
 
     // US107: Listar todos
