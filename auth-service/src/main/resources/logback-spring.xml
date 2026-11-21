@@ -4,12 +4,13 @@
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
     <property name="APP_NAME" value="auth-service"/>
+    <springProperty scope="context" name="INSTANCE_ID" source="aisafe.instance-id" defaultValue="auth"/>
 
-    <!-- Ficheiro separado só com eventos de auditoria (logger "AUDIT"), com rotação -->
+    <!-- Ficheiro separado so com eventos de auditoria (logger "AUDIT"), com rotacao, um por instancia -->
     <appender name="AUDIT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/audit-${APP_NAME}.log</file>
+        <file>logs/audit-${APP_NAME}-${INSTANCE_ID}.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>logs/audit-${APP_NAME}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>logs/audit-${APP_NAME}-${INSTANCE_ID}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxFileSize>10MB</maxFileSize>
             <maxHistory>30</maxHistory>
         </rollingPolicy>

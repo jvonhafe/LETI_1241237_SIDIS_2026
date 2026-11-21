@@ -5,6 +5,7 @@ import com.aisafe.auth.dto.RegisterUserRequest;
 import com.aisafe.auth.model.Role;
 import com.aisafe.auth.model.User;
 import com.aisafe.auth.repository.UserRepository;
+import com.aisafe.auth.events.UserEventPublisher;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,11 +29,14 @@ public class UserAdminController {
     private final UserRepository users;
     private final PasswordEncoder encoder;
     private final AuditLogger audit;
+    private final UserEventPublisher events;
 
-    public UserAdminController(UserRepository users, PasswordEncoder encoder, AuditLogger audit) {
+    public UserAdminController(UserRepository users, PasswordEncoder encoder, AuditLogger audit,
+                               UserEventPublisher events) {
         this.users = users;
         this.encoder = encoder;
         this.audit = audit;
+        this.events = events;
     }
 
     @Operation(summary = "Criar utilizador")
@@ -47,7 +51,8 @@ public class UserAdminController {
             audit.log("USER_CREATE", auth.getName(), "DENIED", http.getRemoteAddr(), "duplicate username");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Username already exists"));
         }
-        users.save(new User(req.username(), encoder.encode(req.password()), req.role()));
+        User saved = users.save(new User(req.username(), encoder.encode(req.password()), req.role()));
+        events.publishUserCreated(saved);
         audit.log("USER_CREATE", auth.getName(), "SUCCESS", http.getRemoteAddr(),
                 "created=" + req.username() + " role=" + req.role());
         return ResponseEntity.status(HttpStatus.CREATED)
