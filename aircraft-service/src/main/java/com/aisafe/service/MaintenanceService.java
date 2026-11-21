@@ -1,6 +1,13 @@
 package com.aisafe.service;
 
 import com.aisafe.core.exception.ResourceNotFoundException;
+import com.aisafe.cqrs.event.AircraftEvent;
+import com.aisafe.cqrs.event.AircraftEventPublisher;
+import com.aisafe.cqrs.event.MaintenanceEvent;
+import com.aisafe.cqrs.query.AircraftReadModel;
+import com.aisafe.cqrs.query.AircraftReadModelRepository;
+import com.aisafe.cqrs.query.MaintenanceReadModel;
+import com.aisafe.cqrs.query.MaintenanceReadModelRepository;
 import com.aisafe.model.Aircraft;
 import com.aisafe.model.AircraftRegistration;
 import com.aisafe.model.MaintenanceRecord;
@@ -11,6 +18,8 @@ import com.aisafe.repository.MaintenanceTemplateRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.ArrayList;
 
 @Service
 public class MaintenanceService {
@@ -18,15 +27,24 @@ public class MaintenanceService {
     private final MaintenanceRecordRepository recordRepository;
     private final MaintenanceTemplateRepository templateRepository;
     private final AircraftRepository aircraftRepository;
+    private final AircraftReadModelRepository aircraftReadRepository;
+    private final MaintenanceReadModelRepository maintenanceReadRepository;
+    private final AircraftEventPublisher eventPublisher;
 
     public MaintenanceService(
             MaintenanceRecordRepository recordRepository,
             MaintenanceTemplateRepository templateRepository,
-            AircraftRepository aircraftRepository
+            AircraftRepository aircraftRepository,
+            AircraftReadModelRepository aircraftReadRepository,
+            MaintenanceReadModelRepository maintenanceReadRepository,
+            AircraftEventPublisher eventPublisher
     ) {
         this.recordRepository = recordRepository;
         this.templateRepository = templateRepository;
         this.aircraftRepository = aircraftRepository;
+        this.aircraftReadRepository = aircraftReadRepository;
+        this.maintenanceReadRepository = maintenanceReadRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     public MaintenanceTemplate createTemplate(MaintenanceTemplate template) {
@@ -34,44 +52,82 @@ public class MaintenanceService {
     }
 
     public MaintenanceRecord createRecord(MaintenanceRecord record) {
-        AircraftRegistration registration = new AircraftRegistration(record.getAircraftRegistration());
+        String reg = record.getAircraftRegistration();
+        AircraftRegistration registration = new AircraftRegistration(reg);
 
-        Aircraft aircraft = aircraftRepository.findById(registration)
-                .orElseThrow(() -> new ResourceNotFoundException("Aircraft not found"));
+        Optional<Aircraft> localAircraft = aircraftRepository.findById(registration);
+        Optional<AircraftReadModel> readAircraft = aircraftReadRepository.findById(reg);
+
+        if (localAircraft.isEmpty() && readAircraft.isEmpty()) {
+            throw new ResourceNotFoundException("Aircraft not found");
+        }
 
         String templateIdStr = record.getTemplateId() != null ? String.valueOf(record.getTemplateId()) : null;
-
         MaintenanceTemplate template = templateRepository.findById(templateIdStr)
                 .orElseThrow(() -> new ResourceNotFoundException("Maintenance template not found"));
 
         if (record.getChecklist() == null || record.getChecklist().isEmpty()) {
-            record.setChecklist(template.getChecklist());
+            if (template.getChecklist() != null) {
+                record.setChecklist(new ArrayList<>(template.getChecklist()));
+            }
         }
 
-        aircraft.setStatus("UNDER_MAINTENANCE");
-        aircraftRepository.save(aircraft);
+        MaintenanceRecord saved = recordRepository.save(record);
 
-        return recordRepository.save(record);
+        if (localAircraft.isPresent()) {
+            Aircraft aircraft = localAircraft.get();
+            aircraft.setStatus("UNDER_MAINTENANCE");
+            aircraftRepository.save(aircraft);
+
+            eventPublisher.publish(new AircraftEvent(
+                    "UPDATED",
+                    aircraft.getRegistrationNumber().getRegistration(),
+                    aircraft.getModelId(),
+                    aircraft.getManufacturingDate(),
+                    "UNDER_MAINTENANCE"
+            ));
+        } else {
+            AircraftReadModel rm = readAircraft.get();
+            eventPublisher.publish(new AircraftEvent(
+                    "UPDATED",
+                    rm.getRegistration(),
+                    rm.getModelId(),
+                    rm.getManufacturingDate(),
+                    "UNDER_MAINTENANCE"
+            ));
+        }
+
+        eventPublisher.publishMaintenance(new MaintenanceEvent(
+                "CREATED",
+                saved.getId(),
+                saved.getAircraftRegistration(),
+                saved.getTemplateId(),
+                saved.getExpectedDurationHours(),
+                saved.getStatus(),
+                saved.getCompletionNotes(),
+                saved.getComponent() != null ? saved.getComponent().name() : null,
+                saved.getCost()
+        ));
+
+        return saved;
     }
 
-    public List<MaintenanceRecord> recordsForAircraft(String registration) {
-        AircraftRegistration regVo = new AircraftRegistration(registration);
-        if (!aircraftRepository.existsById(regVo)) {
+    public List<MaintenanceReadModel> recordsForAircraft(String registration) {
+        if (!aircraftReadRepository.existsById(registration)) {
             throw new ResourceNotFoundException("Aircraft not found");
         }
-        return recordRepository.findByAircraftRegistration(registration);
+        return maintenanceReadRepository.findByAircraftRegistration(registration);
     }
 
     public Double totalHoursForAircraft(String registration) {
-        AircraftRegistration regVo = new AircraftRegistration(registration);
-        if (!aircraftRepository.existsById(regVo)) {
+        if (!aircraftReadRepository.existsById(registration)) {
             throw new ResourceNotFoundException("Aircraft not found");
         }
-        return recordRepository.totalMaintenanceHoursByAircraft(registration);
+        return maintenanceReadRepository.totalMaintenanceHoursByAircraft(registration);
     }
 
     public Double totalHoursForFleet() {
-        return recordRepository.totalMaintenanceHoursForFleet();
+        return maintenanceReadRepository.totalMaintenanceHoursForFleet();
     }
 
     public MaintenanceRecord completeRecord(String recordId, String completionNotes) {
@@ -80,13 +136,53 @@ public class MaintenanceService {
 
         record.complete(completionNotes);
 
-        AircraftRegistration registration = new AircraftRegistration(record.getAircraftRegistration());
-        Aircraft aircraft = aircraftRepository.findById(registration)
-                .orElseThrow(() -> new ResourceNotFoundException("Aircraft not found"));
+        String reg = record.getAircraftRegistration();
+        AircraftRegistration registration = new AircraftRegistration(reg);
 
-        aircraft.setStatus("ACTIVE");
-        aircraftRepository.save(aircraft);
+        Optional<Aircraft> localAircraft = aircraftRepository.findById(registration);
+        Optional<AircraftReadModel> readAircraft = aircraftReadRepository.findById(reg);
 
-        return recordRepository.save(record);
+        if (localAircraft.isEmpty() && readAircraft.isEmpty()) {
+            throw new ResourceNotFoundException("Aircraft not found");
+        }
+
+        if (localAircraft.isPresent()) {
+            Aircraft aircraft = localAircraft.get();
+            aircraft.setStatus("ACTIVE");
+            aircraftRepository.save(aircraft);
+
+            eventPublisher.publish(new AircraftEvent(
+                    "UPDATED",
+                    aircraft.getRegistrationNumber().getRegistration(),
+                    aircraft.getModelId(),
+                    aircraft.getManufacturingDate(),
+                    "ACTIVE"
+            ));
+        } else {
+            AircraftReadModel rm = readAircraft.get();
+            eventPublisher.publish(new AircraftEvent(
+                    "UPDATED",
+                    rm.getRegistration(),
+                    rm.getModelId(),
+                    rm.getManufacturingDate(),
+                    "ACTIVE"
+            ));
+        }
+
+        MaintenanceRecord saved = recordRepository.save(record);
+
+        eventPublisher.publishMaintenance(new MaintenanceEvent(
+                "COMPLETED",
+                saved.getId(),
+                saved.getAircraftRegistration(),
+                saved.getTemplateId(),
+                saved.getExpectedDurationHours(),
+                saved.getStatus(),
+                saved.getCompletionNotes(),
+                saved.getComponent() != null ? saved.getComponent().name() : null,
+                saved.getCost()
+        ));
+
+        return saved;
     }
 }

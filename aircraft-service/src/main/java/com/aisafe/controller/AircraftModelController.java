@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import com.aisafe.cqrs.query.AircraftModelReadModel;
+import com.aisafe.cqrs.query.AircraftModelReadModelRepository;
 
 @RestController
 @RequestMapping("/api/aircraft-models")
@@ -27,19 +29,21 @@ public class AircraftModelController {
     private final GetTop5UtilizedModelsUseCase getTop5UtilizedModelsUseCase;
     private final GetFleetAvailabilityUseCase getFleetAvailabilityUseCase;
     private final CalculateFleetOperationalHoursUseCase calculateFleetOperationalHoursUseCase;
+    private final AircraftModelReadModelRepository modelReadRepository;
 
     public AircraftModelController(RegisterAircraftModelUseCase registerUseCase,
                                    AircraftModelRepository modelRepository,
                                    UpdateAircraftModelUseCase updateAircraftModelUseCase,
                                    GetTop5UtilizedModelsUseCase getTop5UtilizedModelsUseCase,
                                    GetFleetAvailabilityUseCase getFleetAvailabilityUseCase,
-                                   CalculateFleetOperationalHoursUseCase calculateFleetOperationalHoursUseCase) {
+                                   CalculateFleetOperationalHoursUseCase calculateFleetOperationalHoursUseCase, AircraftModelReadModelRepository modelReadRepository) {
         this.registerUseCase = registerUseCase;
         this.modelRepository = modelRepository;
         this.updateAircraftModelUseCase = updateAircraftModelUseCase;
         this.getTop5UtilizedModelsUseCase = getTop5UtilizedModelsUseCase;
         this.getFleetAvailabilityUseCase = getFleetAvailabilityUseCase;
         this.calculateFleetOperationalHoursUseCase = calculateFleetOperationalHoursUseCase;
+        this.modelReadRepository = modelReadRepository;
     }
 
     @Operation(summary = "Registar Modelo de Aeronave")
@@ -55,8 +59,8 @@ public class AircraftModelController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE', 'ATCC')")
-    public List<AircraftModel> getAllModels() {
-        return modelRepository.findAll();
+    public List<AircraftModelReadModel> getAllModels() {
+        return modelReadRepository.findAll();
     }
 
     @Operation(summary = "Atualizar Especificações do Modelo")

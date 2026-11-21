@@ -1,19 +1,19 @@
 package com.aisafe.application.usecase;
 
 import com.aisafe.model.MaintenanceRecord;
-import com.aisafe.repository.MaintenanceRecordRepository;
+import com.aisafe.service.MaintenanceService;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ScheduleMaintenanceUseCase {
 
-    private final MaintenanceRecordRepository recordRepository;
+    private final MaintenanceService maintenanceService;
 
-    public ScheduleMaintenanceUseCase(MaintenanceRecordRepository recordRepository) {
-        this.recordRepository = recordRepository;
+    public ScheduleMaintenanceUseCase(MaintenanceService maintenanceService) {
+        this.maintenanceService = maintenanceService;
     }
 
     public MaintenanceRecord execute(MaintenanceRecord record) {
-        return recordRepository.save(record);
+        return maintenanceService.createRecord(record);
     }
 }
