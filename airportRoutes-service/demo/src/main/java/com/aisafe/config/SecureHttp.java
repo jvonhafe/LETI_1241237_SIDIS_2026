@@ -22,7 +22,6 @@ public final class SecureHttp {
         try {
             Resource resource = new DefaultResourceLoader().getResource(truststoreLocation);
             if (!resource.exists()) {
-                // Sem truststore usa a confiança por omissão da JVM (o certificado continua a ser validado).
                 return new SimpleClientHttpRequestFactory();
             }
             KeyStore trustStore = KeyStore.getInstance("PKCS12");

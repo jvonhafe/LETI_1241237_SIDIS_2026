@@ -1,5 +1,6 @@
 package com.aisafe.application.dto;
 
+import com.aisafe.messaging.DomainEventPublisher;
 import com.aisafe.model.Airport;
 import com.aisafe.model.Facility;
 import com.aisafe.model.IataCode;
@@ -16,10 +17,12 @@ public class RegisterDetailedAirportUseCase {
     @Autowired
     private AirportRepository airportRepository;
 
+    @Autowired
+    private DomainEventPublisher eventPublisher;
+
     public Airport execute(DetailedAirportDto dto) {
         IataCode iataCode = new IataCode(dto.iataCode.toUpperCase());
         if (airportRepository.existsById(iataCode)) {
-            // CORRIGIDO: Substituído por IllegalStateException
             throw new IllegalStateException("O Aeroporto com IATA " + dto.iataCode + " já existe!");
         }
 
@@ -29,21 +32,18 @@ public class RegisterDetailedAirportUseCase {
                 dto.city,
                 dto.country,
                 dto.timezone,
-                "OPERATIONAL");//status iniciais
+                "OPERATIONAL");
 
-        // 3. Adicionar as Instalações
         if (dto.facilities != null) {
             for (DetailedAirportDto.FacilityDto fDto : dto.facilities) {
                 Facility facility = new Facility();
                 facility.setType(fDto.type);
                 facility.setCapacity(fDto.capacity);
                 facility.setDescription(fDto.description);
-
                 airport.addFacility(facility);
             }
         }
 
-        // 4. Adicionar as Fotos
         if (dto.images != null) {
             for (DetailedAirportDto.ImageDto iDto : dto.images) {
                 MediaImage image = new MediaImage();
@@ -53,8 +53,20 @@ public class RegisterDetailedAirportUseCase {
             }
         }
 
-        // 5. Guardar tudo na BD
-        return airportRepository.save(airport);
+        Airport saved = airportRepository.save(airport);
+
+        eventPublisher.publishAirportEvent(
+                "airport.registered",
+                "REGISTERED_DETAILED",
+                saved.getIataCode().getCode(),
+                saved.getName(),
+                saved.getCity(),
+                saved.getCountry(),
+                saved.getTimezone(),
+                saved.getStatus()
+        );
+
+        return saved;
     }
 
     public static class DetailedAirportDto {

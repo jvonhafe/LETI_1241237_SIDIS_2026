@@ -49,7 +49,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, JwtDecoder jwtDecoder) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // API stateless com Bearer token, sem cookies
+                .csrf(csrf -> csrf.disable()) // API stateless com Bearer token
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(new AuditLoggingFilter("airport-routes-service"), BearerTokenAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth

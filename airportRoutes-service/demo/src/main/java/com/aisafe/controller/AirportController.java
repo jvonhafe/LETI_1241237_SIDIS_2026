@@ -4,28 +4,23 @@ import com.aisafe.application.dto.RegisterAirportUseCase;
 import com.aisafe.application.dto.RegisterDetailedAirportUseCase;
 import com.aisafe.application.dto.UpdateAirportDetailsUseCase;
 import com.aisafe.application.dto.UpdateAirportStatusUseCase;
+import com.aisafe.messaging.HelloProducer;
 import com.aisafe.model.Airport;
 import com.aisafe.model.BusiestAirportDto;
 import com.aisafe.model.IataCode;
+import com.aisafe.readmodel.AirportReadModel;
+import com.aisafe.readmodel.AirportReadRepository;
 import com.aisafe.repository.AirportRepository;
-import com.aisafe.messaging.HelloProducer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -53,14 +48,10 @@ public class AirportController {
     @Autowired
     private AirportRepository airportRepository;
 
-    // --- NOVIDADES PARA O FORWARDING ---
     @Autowired
-    private RestTemplate restTemplate;
+    private AirportReadRepository airportReadRepository;
 
-    @Value("${airports.peers.urls:}")
-    private String peersCsv;
-
-    //US106:registar (simples)
+    // US106: Registar (Command)
     @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -70,7 +61,7 @@ public class AirportController {
         return savedAirport;
     }
 
-    // US207: Registar Aeroporto Detalhado (Com Fotos e Instalações)
+    // US207: Registar Aeroporto Detalhado (Command)
     @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE')")
     @PostMapping("/detailed")
     @ResponseStatus(HttpStatus.CREATED)
@@ -80,82 +71,47 @@ public class AirportController {
         return savedAirport;
     }
 
-    // US107: Obter por ID (COM FORWARDING)
-    // US107: Obter por ID (COM FORWARDING P2P)
+    // US107: Obter por ID (Query CQRS - lê do Read Model replicado via RabbitMQ, sem HTTP P2P)
     @GetMapping("/{iata}")
-    public EntityModel<Airport> getAirportById(
-            @PathVariable String iata,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestHeader(value = "X-Forwarded", required = false, defaultValue = "false") boolean isForwarded) {
-
+    public EntityModel<AirportReadModel> getAirportById(@PathVariable String iata) {
         IataCode searchId = new IataCode(iata);
-        Optional<Airport> local = airportRepository.findById(searchId);
+        AirportReadModel airport = airportReadRepository.findById(searchId.getCode())
+                .orElseThrow(() -> new IllegalArgumentException("Aeroporto não encontrado no Read Model: " + iata));
 
-        if (local.isPresent()) {
-            Airport airport = local.get();
-            return EntityModel.of(airport,
-                    linkTo(methodOn(AirportController.class).getAirportById(iata, null, isForwarded)).withSelfRel(),
-                    linkTo(methodOn(AirportController.class).getAllAirports()).withRel("todos-aeroportos"));
-        }
-
-        // Já é um reencaminhamento: não voltamos a perguntar a ninguém (evita ciclos)
-        if (isForwarded) {
-            throw new IllegalArgumentException("Aeroporto não encontrado em nenhuma instância: " + iata);
-        }
-
-        for (String peer : peersCsv.split(",")) {
-            if (peer.isBlank()) continue;
-            try {
-                HttpHeaders headers = new HttpHeaders();
-                headers.add("X-Forwarded", "true");
-                if (authHeader != null) {
-                    headers.set(HttpHeaders.AUTHORIZATION, authHeader);
-                }
-                ResponseEntity<Airport> response = restTemplate.exchange(
-                        peer.trim() + "/api/airports/" + iata,
-                        HttpMethod.GET, new HttpEntity<>(headers), Airport.class);
-
-                if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                    return EntityModel.of(response.getBody(),
-                            linkTo(methodOn(AirportController.class).getAirportById(iata, null, false)).withSelfRel());
-                }
-            } catch (Exception ex) {
-                System.out.println("-> Vizinho " + peer + " não respondeu ou não tem " + iata + ": " + ex.getMessage());
-            }
-        }
-        throw new IllegalArgumentException("Aeroporto não encontrado em nenhuma instância do sistema: " + iata);
+        return EntityModel.of(airport,
+                linkTo(methodOn(AirportController.class).getAirportById(iata)).withSelfRel(),
+                linkTo(methodOn(AirportController.class).getAllAirports()).withRel("todos-aeroportos"));
     }
 
-    // US107: Listar todos
+    // US107: Listar todos (Query CQRS)
     @GetMapping
-    public List<Airport> getAllAirports() {
-        return airportRepository.findAll();
+    public List<AirportReadModel> getAllAirports() {
+        return airportReadRepository.findAll();
     }
 
-    // US108: Pesquisar por cidade
+    // US108: Pesquisar por cidade (Query CQRS)
     @GetMapping("/search")
-    public List<Airport> searchAirports(@RequestParam String city) {
-        return airportRepository.findByCityContainingIgnoreCase(city);
+    public List<AirportReadModel> searchAirports(@RequestParam String city) {
+        return airportReadRepository.findByCityContainingIgnoreCase(city);
     }
 
-    // US109: Atualizar Estado
+    // US109: Atualizar Estado (Command)
     @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE')")
     @PatchMapping("/{iata}/status")
     public Airport updateAirportStatus(@PathVariable String iata, @RequestParam String status) {
         return updateAirportStatusUseCase.execute(iata, status);
     }
 
-    // US208: Atualizar Detalhes do Aeroporto (Contactos e Horários)
+    // US208: Atualizar Detalhes do Aeroporto (Command)
     @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE')")
     @PatchMapping("/{iata}/details")
     public Airport updateAirportDetails(
             @PathVariable String iata,
             @RequestBody UpdateAirportDetailsUseCase.UpdateDetailsRequest request) {
-
         return updateAirportDetailsUseCase.execute(iata, request);
     }
 
-    // --- NOVO: US210: Estatísticas dos Aeroportos mais movimentados ---
+    // US210: Estatísticas dos Aeroportos mais movimentados
     @PreAuthorize("hasAnyRole('ADMIN', 'BACKOFFICE')")
     @GetMapping("/statistics/busiest")
     public List<BusiestAirportDto> getBusiestAirports(
@@ -163,16 +119,15 @@ public class AirportController {
         return airportRepository.findBusiestAirports(PageRequest.of(0, limit));
     }
 
-    // --- NOVO: US211: Ver aeroportos agrupados por país ou região ---
+    // US211: Ver aeroportos agrupados por país ou região (Query CQRS)
     @GetMapping("/grouped")
-    public Map<String, List<Airport>> getAirportsGrouped(@RequestParam(defaultValue = "country") String by) {
-
-        List<Airport> allAirports = airportRepository.findAll();
+    public Map<String, List<AirportReadModel>> getAirportsGrouped(@RequestParam(defaultValue = "country") String by) {
+        List<AirportReadModel> allAirports = airportReadRepository.findAll();
 
         if ("country".equalsIgnoreCase(by)) {
-            return allAirports.stream().collect(Collectors.groupingBy(Airport::getCountry));
+            return allAirports.stream().collect(Collectors.groupingBy(AirportReadModel::getCountry));
         } else if ("timezone".equalsIgnoreCase(by)) {
-            return allAirports.stream().collect(Collectors.groupingBy(Airport::getTimezone));
+            return allAirports.stream().collect(Collectors.groupingBy(AirportReadModel::getTimezone));
         } else {
             throw new IllegalArgumentException("Parâmetro de agrupamento não suportado. Use 'country' ou 'timezone'.");
         }

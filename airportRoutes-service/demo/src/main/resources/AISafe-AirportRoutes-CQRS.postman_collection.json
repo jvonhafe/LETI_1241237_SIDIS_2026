@@ -1,0 +1,178 @@
+{
+  "info": {
+    "name": "AISafe - Airport & Routes (CQRS + RabbitMQ + 2 Instances)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "inst1", "value": "https://localhost:8091" },
+    { "key": "inst2", "value": "https://localhost:8092" },
+    { "key": "token", "value": "COLAR_AQUI_O_TEU_JWT" },
+    { "key": "routeId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1.Registar Aeroporto OPO",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Aeroporto OPO criado na Instância 1 (201)', function () {",
+              "    pm.response.to.have.status(201);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"iataCode\": \"OPO\",\n  \"name\": \"Aeroporto Francisco Sá Carneiro\",\n  \"city\": \"Porto\",\n  \"country\": \"Portugal\",\n  \"timezone\": \"Europe/Lisbon\",\n  \"status\": \"OPERATIONAL\"\n}"
+        },
+        "url": "{{inst1}}/api/airports"
+      }
+    },
+    {
+      "name": "2.Registar Aeroporto LIS",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Aeroporto LIS criado na Instância 1 (201)', function () {",
+              "    pm.response.to.have.status(201);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"iataCode\": \"LIS\",\n  \"name\": \"Aeroporto Humberto Delgado\",\n  \"city\": \"Lisboa\",\n  \"country\": \"Portugal\",\n  \"timezone\": \"Europe/Lisbon\",\n  \"status\": \"OPERATIONAL\"\n}"
+        },
+        "url": "{{inst1}}/api/airports"
+      }
+    },
+    {
+      "name": "3.Ler Aeroporto OPO do Read Model",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": { "exec": ["setTimeout(function(){}, 1000);"], "type": "text/javascript" }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Aeroporto OPO replicado na Instância 2 via RabbitMQ (200)', function () {",
+              "    pm.response.to.have.status(200);",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.iataCode).to.eql('OPO');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{inst2}}/api/airports/OPO"
+      }
+    },
+    {
+      "name": "4.Criar Rota OPO -> LIS",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Rota criada na Instância 1 (201)', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "var json = pm.response.json();",
+              "pm.collectionVariables.set('routeId', json.id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"originAirport\": \"OPO\",\n  \"destinationAirport\": \"LIS\",\n  \"estimatedFlightTimeMinutes\": 55,\n  \"minimumRange\": 350,\n  \"minimumCapacity\": 120,\n  \"distanceKm\": 277.0\n}"
+        },
+        "url": "{{inst1}}/api/routes"
+      }
+    },
+    {
+      "name": "5.Ler Rota do Read Model (CQRS)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": { "exec": ["setTimeout(function(){}, 1000);"], "type": "text/javascript" }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Rota replicada no Read Model da Instância 2 com nomes desnormalizados', function () {",
+              "    pm.response.to.have.status(200);",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.originIata).to.eql('OPO');",
+              "    pm.expect(json.destinationIata).to.eql('LIS');",
+              "    pm.expect(json.originName).to.eql('Aeroporto Francisco Sá Carneiro');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{inst2}}/api/routes/{{routeId}}"
+      }
+    },
+    {
+      "name": "6.Desativar Rota e Validar Propagação",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Rota desativada na Instância 1 (200)', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(pm.response.json().status).to.eql('DEACTIVATED');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{inst1}}/api/routes/{{routeId}}/deactivate"
+      }
+    }
+  ]
+}

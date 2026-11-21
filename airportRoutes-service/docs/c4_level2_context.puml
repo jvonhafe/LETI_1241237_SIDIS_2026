@@ -1,19 +1,34 @@
-@startuml
+@startuml C4_Level2_Containers
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
-title Diagrama de Contentores (Nível 2) - Serviço de Aeroportos
+title Diagrama de Contentores (Nível 2) - Arquitetura Distribuída com CQRS e AMQP
 
-Person(admin, "Administrador", "Gere o sistema de rotas e aeroportos")
+Person(client, "Cliente Externo / Postman", "Consome a API REST externa sobre HTTPS/TLS.")
 
-System_Boundary(airport_system, "Sistema de Aeroportos") {
-    Container(api, "API Application", "Java, Spring Boot", "Disponibiliza os endpoints REST, faz forwarding e orquestra a lógica de negócio")
-    ContainerDb(db, "Database", "H2 Database", "Armazena a informação persistente dos aeroportos")
+System_Boundary(aisafe_boundary, "AISafe Distributed System") {
+
+    Container(ar_inst1, "Airport & Routes Service (Instância 1)", "Spring Boot 4 / Java 17", "Expõe API REST (:8091), executa Commands/Queries (CQRS) e publica/consome eventos.")
+    Container(ar_inst2, "Airport & Routes Service (Instância 2)", "Spring Boot 4 / Java 17", "Expõe API REST (:8092), executa Commands/Queries (CQRS) e publica/consome eventos.")
+
+    ContainerDb(db_inst1, "Base de Dados Instância 1", "H2 Embedded File", "airport_routes_8091: tabelas Write Model e Read Model isoladas.")
+    ContainerDb(db_inst2, "Base de Dados Instância 2", "H2 Embedded File", "airport_routes_8092: tabelas Write Model e Read Model isoladas.")
+
+    ContainerQueue(rabbitmq, "Message Broker", "RabbitMQ (AMQP)", "Topic Exchange 'aisafe.domain.exchange' e filas duráveis exclusivas por instância.")
+
+    Container(flight_svc, "Flight Operations Service (2+ Instâncias)", "Microsserviço", "Subscreve eventos 'airport.#' e 'route.#' para manter projeção local.")
+    Container(aircraft_svc, "Aircraft & Maintenance Service (2+ Instâncias)", "Microsserviço", "Gere frota e manutenção; comunica assincronamente via AMQP.")
 }
 
-System_Ext(rabbitmq, "Message Broker", "RabbitMQ", "Gere filas de mensagens assíncronas")
+Rel(client, ar_inst1, "Commands & Queries", "HTTPS/REST + JWT (:8091)")
+Rel(client, ar_inst2, "Commands & Queries", "HTTPS/REST + JWT (:8092)")
 
-Rel(admin, api, "Faz pedidos HTTP", "REST/JSON")
-Rel(api, db, "Lê e escreve dados", "JDBC/JPA")
-Rel(api, rabbitmq, "Publica eventos (produtor)", "AMQP")
-Rel(rabbitmq, api, "Consome eventos (consumidor)", "AMQP")
+Rel(ar_inst1, db_inst1, "Lê/Escreve Write & Read Models", "JDBC")
+Rel(ar_inst2, db_inst2, "Lê/Escreve Write & Read Models", "JDBC")
+
+Rel(ar_inst1, rabbitmq, "Publica eventos (airport.*, route.*) / Consome fila .8091", "AMQP")
+Rel(ar_inst2, rabbitmq, "Publica eventos (airport.*, route.*) / Consome fila .8092", "AMQP")
+
+Rel(flight_svc, rabbitmq, "Subscreve eventos de rotas e aeroportos", "AMQP")
+Rel(aircraft_svc, rabbitmq, "Publica/Subscreve eventos de domínio", "AMQP")
+
 @enduml

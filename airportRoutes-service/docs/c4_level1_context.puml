@@ -1,8 +1,16 @@
-@startuml
+@startuml C4_Level1_Context
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
 
-Person(user, "Administrador / ATCC", "Gere aeroportos, rotas, frotas e operações de voo.")
-System(platform, "AISafe Platform", "Sistema distribuído de gestão de operações de aviação.")
+title Diagrama de Contexto (Nível 1) - AISafe Flight Management System
 
-Rel(user, platform, "Visualiza e gere dados da plataforma via", "HTTP/REST")
+Person(admin, "Administrador / Backoffice", "Gere aeroportos, rotas, aeronaves e configurações operacionais.")
+Person(atcc, "Controlador de Tráfego (ATCC)", "Consulta rotas ativas, estado dos aeroportos e operações de voo.")
+
+System(aisafe, "AISafe Flight Management System", "Plataforma distribuída de gestão de aviação baseada em microsserviços, CQRS e mensageria assíncrona.")
+System_Ext(auth, "Auth Service (OAuth2 / JWT)", "Emite e valida tokens JWT e papéis RBAC (ADMIN, ATCC, BACKOFFICE, SERVICE).")
+
+Rel(admin, aisafe, "Envia comandos e consultas via HTTPS/REST")
+Rel(atcc, aisafe, "Consulta rotas e estados via HTTPS/REST")
+Rel(aisafe, auth, "Valida assinaturas JWT e permissões", "HTTPS")
+
 @enduml

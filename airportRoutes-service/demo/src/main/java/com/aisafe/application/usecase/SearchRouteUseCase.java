@@ -1,8 +1,8 @@
 package com.aisafe.application.usecase;
 
-import com.aisafe.model.Airport;
-import com.aisafe.model.Route;
-import com.aisafe.repository.RouteRepository;
+import com.aisafe.model.IataCode;
+import com.aisafe.readmodel.RouteReadModel;
+import com.aisafe.readmodel.RouteReadRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,33 +10,31 @@ import java.util.List;
 @Service
 public class SearchRouteUseCase {
 
-    private final RouteRepository routeRepository;
-    private final RouteUseCaseHelper helper;
+    private final RouteReadRepository routeReadRepository;
 
-    public SearchRouteUseCase(RouteRepository routeRepository,
-                              RouteUseCaseHelper helper) {
-        this.routeRepository = routeRepository;
-        this.helper = helper;
+    public SearchRouteUseCase(RouteReadRepository routeReadRepository) {
+        this.routeReadRepository = routeReadRepository;
     }
 
-    public List<Route> execute(String originCode, String destinationCode) {
+    public List<RouteReadModel> execute(String originCode, String destinationCode) {
+        boolean hasOrigin = originCode != null && !originCode.isBlank();
+        boolean hasDestination = destinationCode != null && !destinationCode.isBlank();
 
-        if (originCode != null && destinationCode != null) {
-            Airport origin = helper.getAirport(originCode);
-            Airport destination = helper.getAirport(destinationCode);
-            return routeRepository.findByOriginAirportAndDestinationAirport(origin, destination);
+        if (hasOrigin && hasDestination) {
+            return routeReadRepository.findByOriginIataAndDestinationIata(
+                    new IataCode(originCode).getCode(),
+                    new IataCode(destinationCode).getCode()
+            );
         }
 
-        if (originCode != null) {
-            Airport origin = helper.getAirport(originCode);
-            return routeRepository.findByOriginAirport(origin);
+        if (hasOrigin) {
+            return routeReadRepository.findByOriginIata(new IataCode(originCode).getCode());
         }
 
-        if (destinationCode != null) {
-            Airport destination = helper.getAirport(destinationCode);
-            return routeRepository.findByDestinationAirport(destination);
+        if (hasDestination) {
+            return routeReadRepository.findByDestinationIata(new IataCode(destinationCode).getCode());
         }
 
-        return routeRepository.findAll();
+        return routeReadRepository.findAll();
     }
 }

@@ -1,25 +1,40 @@
-@startuml
+@startuml C4_Level3_Components
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
-title Diagrama de Componentes (Nível 3) - API Application
+title Diagrama de Componentes (Nível 3) - Airport & Routes Service (CQRS)
 
-ContainerDb(db, "Database", "H2 Database", "Armazena aeroportos")
-System_Ext(rabbitmq, "Message Broker", "RabbitMQ", "Fila: hello-queue")
+Container_Boundary(service, "Airport & Routes Service (Instância :8091 ou :8092)") {
 
-Container_Boundary(api, "API Application") {
-    Component(controller, "AirportController", "Spring RestController", "Gere endpoints HTTP e reencaminhamento (Forwarding)")
-    Component(usecases, "Use Cases (Services)", "Spring Service", "Executa a lógica de registo e atualização")
-    Component(repo, "AirportRepository", "Spring Data JPA", "Interface de acesso à BD")
+    Component(controllers, "REST Controllers", "AirportController, RouteController", "Endpoints externos HTTPS/REST protegidos por JWT e RBAC.")
 
-    Component(producer, "HelloProducer", "Spring Component", "Converte e envia mensagens para a fila")
-    Component(consumer, "HelloConsumer", "RabbitListener", "Ouve e processa mensagens que chegam da fila")
+    Component(cmd_uc, "Command Use Cases", "CreateRoute, UpdateRoute, DeactivateRoute, RegisterAirport, UpdateAirportStatus/Details", "Valida regras de negócio, persiste no Write Model e dispara eventos.")
+    Component(qry_uc, "Query Use Cases", "GetRouteById, SearchRoute, GetRoutesFromAirport, GetActiveRoutesSorted", "Executa consultas rápidas sem joins sobre o Read Model.")
+
+    Component(write_repo, "Write Repositories", "AirportRepository, RouteRepository, RouteHistoryRepository", "Acesso JPA ao modelo normalizado de escrita.")
+    Component(read_repo, "Read Repositories", "AirportReadRepository, RouteReadRepository", "Acesso JPA às projeções desnormalizadas de leitura.")
+
+    Component(publisher, "DomainEventPublisher", "Spring AMQP RabbitTemplate", "Envia AirportDomainEvent e RouteDomainEvent para o exchange.")
+    Component(consumer, "DomainEventConsumer", "@RabbitListener / @RabbitHandler", "Consome eventos da fila exclusiva da instância com controlo de idempotência.")
 }
 
-Rel(controller, usecases, "Usa")
-Rel(controller, producer, "Dispara evento de criação")
-Rel(usecases, repo, "Lê/Escreve")
-Rel(repo, db, "SQL/JDBC")
+ContainerDb(db, "Base de Dados Dedicada da Instância", "H2 (airport_routes_<port>)", "Tabelas Write (airports, routes, route_history) e Read (airport_read_model, route_read_model).")
+ContainerQueue(broker, "RabbitMQ Broker", "aisafe.domain.exchange", "Fila durável: airport-routes.sync.<port>")
 
-Rel(producer, rabbitmq, "Publica mensagens", "AMQP")
-Rel(rabbitmq, consumer, "Entrega mensagens", "AMQP")
+Rel(controllers, cmd_uc, "Invoca comandos (POST, PUT, PATCH)")
+Rel(controllers, qry_uc, "Invoca consultas (GET)")
+
+Rel(cmd_uc, write_repo, "Persiste estado de domínio")
+Rel(cmd_uc, publisher, "Publica evento após persistência")
+
+Rel(qry_uc, read_repo, "Consulta projeções desnormalizadas")
+
+Rel(publisher, broker, "Publica mensagem JSON", "AMQP")
+Rel(broker, consumer, "Entrega eventos (route.#, airport.#)", "AMQP")
+
+Rel(consumer, read_repo, "Atualiza Read Model (Upsert idempotente)")
+Rel(consumer, write_repo, "Sincroniza agregado local de suporte entre instâncias")
+
+Rel(write_repo, db, "SQL Write", "JDBC")
+Rel(read_repo, db, "SQL Read", "JDBC")
+
 @enduml

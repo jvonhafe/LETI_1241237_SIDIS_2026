@@ -1,8 +1,8 @@
 package com.aisafe.application.usecase;
 
-import com.aisafe.model.Airport;
-import com.aisafe.model.Route;
-import com.aisafe.repository.RouteRepository;
+import com.aisafe.model.IataCode;
+import com.aisafe.readmodel.RouteReadModel;
+import com.aisafe.readmodel.RouteReadRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,17 +10,14 @@ import java.util.List;
 @Service
 public class GetRoutesFromAirportUseCase {
 
-    private final RouteRepository routeRepository;
-    private final RouteUseCaseHelper helper;
+    private final RouteReadRepository routeReadRepository;
 
-    public GetRoutesFromAirportUseCase(RouteRepository routeRepository,
-                                       RouteUseCaseHelper helper) {
-        this.routeRepository = routeRepository;
-        this.helper = helper;
+    public GetRoutesFromAirportUseCase(RouteReadRepository routeReadRepository) {
+        this.routeReadRepository = routeReadRepository;
     }
 
-    public List<Route> execute(String originCode) {
-        Airport origin = helper.getAirport(originCode);
-        return routeRepository.findByOriginAirport(origin);
+    public List<RouteReadModel> execute(String originCode) {
+        IataCode code = new IataCode(originCode);
+        return routeReadRepository.findByOriginIata(code.getCode());
     }
 }

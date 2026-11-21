@@ -36,7 +36,6 @@ public class ServiceTokenProvider {
 
     @SuppressWarnings("unchecked")
     public synchronized String getToken() {
-        // Renova 30 segundos antes de expirar
         if (cachedToken == null || Instant.now().isAfter(expiresAt.minusSeconds(30))) {
             Map<String, Object> body = Map.of("serviceId", serviceId, "secret", serviceSecret);
             Map<String, Object> response = authClient.postForObject(authUrl + "/api/auth/service-token", body, Map.class);

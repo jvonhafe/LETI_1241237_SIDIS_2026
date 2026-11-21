@@ -1,18 +1,20 @@
 package com.aisafe.application.usecase;
 
-import com.aisafe.model.Route;
+import com.aisafe.readmodel.RouteReadModel;
+import com.aisafe.readmodel.RouteReadRepository;
 import org.springframework.stereotype.Service;
 
 @Service
 public class GetRouteByIdUseCase {
 
-    private final RouteUseCaseHelper helper;
+    private final RouteReadRepository routeReadRepository;
 
-    public GetRouteByIdUseCase(RouteUseCaseHelper helper) {
-        this.helper = helper;
+    public GetRouteByIdUseCase(RouteReadRepository routeReadRepository) {
+        this.routeReadRepository = routeReadRepository;
     }
 
-    public Route execute(Long id) {
-        return helper.getRoute(id);
+    public RouteReadModel execute(Long id) {
+        return routeReadRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Route not found with id: " + id));
     }
 }

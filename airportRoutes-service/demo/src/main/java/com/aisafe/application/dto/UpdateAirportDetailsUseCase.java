@@ -1,5 +1,6 @@
 package com.aisafe.application.dto;
 
+import com.aisafe.messaging.DomainEventPublisher;
 import com.aisafe.model.Airport;
 import com.aisafe.model.ContactInfo;
 import com.aisafe.model.IataCode;
@@ -14,11 +15,13 @@ public class UpdateAirportDetailsUseCase {
     @Autowired
     private AirportRepository airportRepository;
 
+    @Autowired
+    private DomainEventPublisher eventPublisher;
+
     public Airport execute(String iata, UpdateDetailsRequest request) {
         IataCode iataCode = new IataCode(iata);
 
         Airport airport = airportRepository.findById(iataCode)
-                // CORRIGIDO: Substituído por IllegalArgumentException
                 .orElseThrow(() -> new IllegalArgumentException("Aeroporto não encontrado: " + iata));
 
         if (request.contactInfo != null) {
@@ -29,7 +32,20 @@ public class UpdateAirportDetailsUseCase {
             airport.updateOperatingHours(request.operatingHours);
         }
 
-        return airportRepository.save(airport);
+        Airport saved = airportRepository.save(airport);
+
+        eventPublisher.publishAirportEvent(
+                "airport.updated",
+                "DETAILS_UPDATED",
+                saved.getIataCode().getCode(),
+                saved.getName(),
+                saved.getCity(),
+                saved.getCountry(),
+                saved.getTimezone(),
+                saved.getStatus()
+        );
+
+        return saved;
     }
 
     public static class UpdateDetailsRequest {

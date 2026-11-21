@@ -4,8 +4,8 @@ import com.aisafe.application.usecase.*;
 import com.aisafe.model.IataCode;
 import com.aisafe.model.Route;
 import com.aisafe.model.RouteHistory;
-import com.aisafe.repository.RouteRepository;
-
+import com.aisafe.readmodel.RouteReadModel;
+import com.aisafe.readmodel.RouteReadRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -24,9 +24,8 @@ public class RouteController {
     private final UpdateRouteUseCase updateRouteUseCase;
     private final DeactivateRouteUseCase deactivateRouteUseCase;
     private final GetRouteHistoryUseCase getRouteHistoryUseCase;
-    private final RouteRepository routeRepository;
+    private final RouteReadRepository routeReadRepository;
 
-    // Novos UseCases das US 214, 215 e 216
     private final GetActiveRoutesSortedUseCase getActiveRoutesSortedUseCase;
     private final CalculateTotalDistanceUseCase calculateTotalDistanceUseCase;
     private final FindAlternativeRoutesUseCase findAlternativeRoutesUseCase;
@@ -38,7 +37,7 @@ public class RouteController {
                            UpdateRouteUseCase updateRouteUseCase,
                            DeactivateRouteUseCase deactivateRouteUseCase,
                            GetRouteHistoryUseCase getRouteHistoryUseCase,
-                           RouteRepository routeRepository,
+                           RouteReadRepository routeReadRepository,
                            GetActiveRoutesSortedUseCase getActiveRoutesSortedUseCase,
                            CalculateTotalDistanceUseCase calculateTotalDistanceUseCase,
                            FindAlternativeRoutesUseCase findAlternativeRoutesUseCase) {
@@ -49,13 +48,13 @@ public class RouteController {
         this.updateRouteUseCase = updateRouteUseCase;
         this.deactivateRouteUseCase = deactivateRouteUseCase;
         this.getRouteHistoryUseCase = getRouteHistoryUseCase;
-        this.routeRepository = routeRepository;
+        this.routeReadRepository = routeReadRepository;
         this.getActiveRoutesSortedUseCase = getActiveRoutesSortedUseCase;
         this.calculateTotalDistanceUseCase = calculateTotalDistanceUseCase;
         this.findAlternativeRoutesUseCase = findAlternativeRoutesUseCase;
     }
 
-    // US110: Criar Rota
+    // US110: Criar Rota (Command)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Route createRoute(@RequestBody CreateRouteRequest request) {
@@ -69,26 +68,26 @@ public class RouteController {
         );
     }
 
-    // US113: Obter Rota por ID
+    // US113: Obter Rota por ID (Query CQRS)
     @GetMapping("/{id}")
-    public Route getRouteById(@PathVariable Long id) {
+    public RouteReadModel getRouteById(@PathVariable Long id) {
         return getRouteByIdUseCase.execute(id);
     }
 
-    // US113: Listar Rotas por Aeroporto de Origem
+    // US113: Listar Rotas por Aeroporto de Origem (Query CQRS)
     @GetMapping("/from/{iataCode}")
-    public List<Route> getRoutesFromAirport(@PathVariable String iataCode) {
+    public List<RouteReadModel> getRoutesFromAirport(@PathVariable String iataCode) {
         return getRoutesFromAirportUseCase.execute(iataCode);
     }
 
-    // US114: Pesquisar Rotas por Origem/Destino
+    // US114: Pesquisar Rotas por Origem/Destino (Query CQRS)
     @GetMapping("/search")
-    public List<Route> searchRoutes(@RequestParam(required = false) String origin,
-                                    @RequestParam(required = false) String destination) {
+    public List<RouteReadModel> searchRoutes(@RequestParam(required = false) String origin,
+                                             @RequestParam(required = false) String destination) {
         return searchRoutesUseCase.execute(origin, destination);
     }
 
-    // US112: Atualizar Rota
+    // US112: Atualizar Rota (Command)
     @PreAuthorize("hasAnyRole('ADMIN', 'ATCC', 'BACKOFFICE')")
     @PutMapping("/{id}")
     public Route updateRoute(@PathVariable Long id,
@@ -102,7 +101,7 @@ public class RouteController {
         );
     }
 
-    // US112: Desativar Rota
+    // US112: Desativar Rota (Command)
     @PreAuthorize("hasAnyRole('ADMIN', 'ATCC', 'BACKOFFICE')")
     @PatchMapping("/{id}/deactivate")
     public Route deactivateRoute(@PathVariable Long id) {
@@ -115,19 +114,16 @@ public class RouteController {
         return getRouteHistoryUseCase.execute(id);
     }
 
-    // US209: Consultar rotas por Aeroporto (Partida ou Chegada)
+    // US209: Consultar rotas por Aeroporto (Query CQRS)
     @GetMapping("/airport/{iata}")
-    public List<Route> getRoutesByAirport(@PathVariable String iata) {
-        return routeRepository.findRoutesByAirport(new IataCode(iata));
+    public List<RouteReadModel> getRoutesByAirport(@PathVariable String iata) {
+        String code = new IataCode(iata).getCode();
+        return routeReadRepository.findByOriginIataOrDestinationIata(code, code);
     }
 
-    // ==============================================================
-    // NOVOS ENDPOINTS: US 214, 215, 216
-    // ==============================================================
-
-    // US214: Listar rotas ativas ordenadas por popularidade ou distância
+    // US214: Listar rotas ativas ordenadas (Query CQRS)
     @GetMapping("/active/sorted")
-    public List<Route> getActiveRoutesSorted(@RequestParam(defaultValue = "distance") String sortBy) {
+    public List<RouteReadModel> getActiveRoutesSorted(@RequestParam(defaultValue = "distance") String sortBy) {
         return getActiveRoutesSortedUseCase.execute(sortBy);
     }
 
@@ -143,8 +139,6 @@ public class RouteController {
                                                   @RequestParam String destination) {
         return findAlternativeRoutesUseCase.execute(origin, destination);
     }
-
-    // ==============================================================
 
     public static class CreateRouteRequest {
         public String originAirport;

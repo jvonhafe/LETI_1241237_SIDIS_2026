@@ -1,31 +1,37 @@
-@startuml
-actor Client
-participant "Instância 2 (8082)\nAirportController" as Inst2
-participant "Instância 2 (8082)\nAirportRepository" as Repo2
-participant "Instância 1 (8081)\nAirportController" as Inst1
-participant "Instância 1 (8081)\nAirportRepository" as Repo1
+@startuml C4_Plus1_CQRS_Sync
+title Vista +1 (Sequência) - Replicação Assíncrona CQRS entre Instâncias Isoladas
 
-Client -> Inst2: GET /api/airports/OPO
-activate Inst2
+actor "Cliente / Postman" as Client
+participant "Instância 1 (:8091)\nRouteController" as Ctrl1
+participant "CreateRouteUseCase\n(Command)" as Cmd1
+database "BD Instância 1\n(airport_routes_8091)" as DB1
+queue "RabbitMQ\naisafe.domain.exchange" as MQ
+participant "Instância 2 (:8092)\nDomainEventConsumer" as Cons2
+database "BD Instância 2\n(airport_routes_8092)" as DB2
+participant "Instância 2 (:8092)\nRouteController (Query)" as Ctrl2
 
-Inst2 -> Repo2: findById("OPO")
-activate Repo2
-Repo2 --> Inst2: Optional.empty()
-deactivate Repo2
+Client -> Ctrl1 : POST /api/routes (OPO -> LIS)
+activate Ctrl1
+Ctrl1 -> Cmd1 : execute(...)
+activate Cmd1
+Cmd1 -> DB1 : INSERT INTO routes & route_history (Write Model)
+Cmd1 -> MQ : publish("route.created", RouteDomainEvent)
+Cmd1 --> Ctrl1 : Route (ID=1)
+deactivate Cmd1
+Ctrl1 --> Client : 201 Created
+deactivate Ctrl1
 
-note right of Inst2: Aeroporto não encontrado localmente.\nInicia mecanismo de HTTP Forwarding.
+MQ -> Cons2 : Entrega mensagem na fila 'airport-routes.sync.8092'
+activate Cons2
+Cons2 -> Cons2 : Verifica idempotência (eventId != lastEventId)
+Cons2 -> DB2 : UPSERT route_read_model (Read Model desnormalizado)
+deactivate Cons2
 
-Inst2 -> Inst1: GET /api/airports/OPO\n(Header: X-Forwarded=true)
-activate Inst1
+Client -> Ctrl2 : GET /api/routes/1
+activate Ctrl2
+Ctrl2 -> DB2 : SELECT * FROM route_read_model WHERE id=1
+DB2 --> Ctrl2 : RouteReadModel (com originName e destinationName)
+Ctrl2 --> Client : 200 OK
+deactivate Ctrl2
 
-Inst1 -> Repo1: findById("OPO")
-activate Repo1
-Repo1 --> Inst1: Airport("OPO", "Porto", ...)
-deactivate Repo1
-
-Inst1 --> Inst2: 200 OK (JSON)
-deactivate Inst1
-
-Inst2 --> Client: 200 OK (JSON)
-deactivate Inst2
 @enduml

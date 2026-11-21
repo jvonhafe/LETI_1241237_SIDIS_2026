@@ -1,5 +1,6 @@
 package com.aisafe.application.usecase;
 
+import com.aisafe.messaging.DomainEventPublisher;
 import com.aisafe.model.Airport;
 import com.aisafe.model.Route;
 import com.aisafe.model.RouteStatus;
@@ -11,11 +12,14 @@ public class CreateRouteUseCase {
 
     private final RouteRepository routeRepository;
     private final RouteUseCaseHelper helper;
+    private final DomainEventPublisher eventPublisher;
 
     public CreateRouteUseCase(RouteRepository routeRepository,
-                              RouteUseCaseHelper helper) {
+                              RouteUseCaseHelper helper,
+                              DomainEventPublisher eventPublisher) {
         this.routeRepository = routeRepository;
         this.helper = helper;
+        this.eventPublisher = eventPublisher;
     }
 
     public Route execute(String originCode,
@@ -40,7 +44,6 @@ public class CreateRouteUseCase {
 
         if (routeRepository.existsByOriginAirportAndDestinationAirportAndStatus(
                 origin, destination, RouteStatus.ACTIVE)) {
-            // CORRIGIDO AQUI: Utiliza uma exceção nativa do Java
             throw new IllegalStateException("An active route already exists between these airports.");
         }
 
@@ -55,6 +58,22 @@ public class CreateRouteUseCase {
 
         Route savedRoute = routeRepository.save(route);
         helper.saveHistory(savedRoute, "CREATED", "Route created.");
+
+        // Publica evento assíncrono para sincronizar o Read Model das duas instâncias
+        eventPublisher.publishRouteEvent(
+                "route.created",
+                "CREATED",
+                savedRoute.getId(),
+                origin.getIataCode().getCode(),
+                origin.getName(),
+                destination.getIataCode().getCode(),
+                destination.getName(),
+                savedRoute.getEstimatedFlightTimeMinutes(),
+                savedRoute.getMinimumRange(),
+                savedRoute.getMinimumCapacity(),
+                savedRoute.getDistanceKm(),
+                savedRoute.getStatus().name()
+        );
 
         return savedRoute;
     }

@@ -1,36 +1,24 @@
 package com.aisafe.application.usecase;
 
-import com.aisafe.model.Route;
-import com.aisafe.model.RouteStatus;
-import com.aisafe.repository.RouteRepository;
+import com.aisafe.readmodel.RouteReadModel;
+import com.aisafe.readmodel.RouteReadRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class GetActiveRoutesSortedUseCase {
 
-    private final RouteRepository routeRepository;
-    // APAGADO: private final ScheduledFlightRepository flightRepository;
+    private final RouteReadRepository routeReadRepository;
 
-    public GetActiveRoutesSortedUseCase(RouteRepository routeRepository) {
-        this.routeRepository = routeRepository;
+    public GetActiveRoutesSortedUseCase(RouteReadRepository routeReadRepository) {
+        this.routeReadRepository = routeReadRepository;
     }
 
-    public List<Route> execute(String sortBy) {
-        List<Route> activeRoutes = routeRepository.findAll().stream()
-                .filter(r -> r.getStatus() == RouteStatus.ACTIVE)
-                .collect(Collectors.toList());
-
-        if ("distance".equalsIgnoreCase(sortBy)) {
-            activeRoutes.sort(Comparator.comparing(r -> r.getDistanceKm() == null ? 0.0 : r.getDistanceKm()));
-        } else if ("popularity".equalsIgnoreCase(sortBy)) {
-            // NOTA PARA O FUTURO: Num sistema distribuído, terás de pedir ao Flight Operations Service
-            // a quantidade de voos por rota através de um pedido HTTP.
-            throw new UnsupportedOperationException("A ordenação por popularidade requer comunicação com o serviço de Voos (ficará para a Semana 3).");
+    public List<RouteReadModel> execute(String sortBy) {
+        if ("popularity".equalsIgnoreCase(sortBy)) {
+            throw new UnsupportedOperationException("A ordenação por popularidade requer projeção de eventos do Flight Operations Service.");
         }
-        return activeRoutes;
+        return routeReadRepository.findByStatusOrderByDistanceKmAsc("ACTIVE");
     }
 }
