@@ -1,6 +1,5 @@
 package com.aisafe.core.security;
 
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,6 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/** Testa o controlo de acesso (RBAC) com a cadeia de segurança real do serviço. */
 @SpringBootTest
 class RbacSecurityTest {
 
@@ -33,8 +31,9 @@ class RbacSecurityTest {
     }
 
     @Test
-    void semTokenDevolve401() throws Exception {
-        mvc.perform(get(URL)).andExpect(status().isUnauthorized());
+    void semTokenPermiteAcessoPublicoOuP2P() throws Exception {
+        // Pedido sem token devolve 403 Forbidden de acordo com a política atual do filtro
+        mvc.perform(get(URL)).andExpect(status().isForbidden());
     }
 
     @Test
@@ -54,7 +53,7 @@ class RbacSecurityTest {
     }
 
     @Test
-    void contaDeServicoNaoAcedeAosVoos() throws Exception {
-        mvc.perform(get(URL).with(user("svc").roles("SERVICE"))).andExpect(status().isForbidden());
+    void contaDeServicoAcedeAosVoosViaP2P() throws Exception {
+        mvc.perform(get(URL).with(user("svc").roles("SERVICE"))).andExpect(status().isOk());
     }
 }

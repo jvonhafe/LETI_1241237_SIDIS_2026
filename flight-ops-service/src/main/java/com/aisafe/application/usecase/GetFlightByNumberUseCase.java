@@ -1,19 +1,19 @@
 package com.aisafe.application.usecase;
 
-import com.aisafe.model.ScheduledFlight;
-import com.aisafe.repository.ScheduledFlightRepository;
+import com.aisafe.cqrs.query.FlightReadModel;
+import com.aisafe.cqrs.query.FlightReadModelRepository;
 import org.springframework.stereotype.Service;
 
 @Service
 public class GetFlightByNumberUseCase {
-    private final ScheduledFlightRepository flightRepository;
+    private final FlightReadModelRepository flightReadRepository;
 
-    public GetFlightByNumberUseCase(ScheduledFlightRepository flightRepository) {
-        this.flightRepository = flightRepository;
+    public GetFlightByNumberUseCase(FlightReadModelRepository flightReadRepository) {
+        this.flightReadRepository = flightReadRepository;
     }
 
-    public ScheduledFlight execute(String flightNumber) {
-        return flightRepository.findById(flightNumber)
+    public FlightReadModel execute(String flightNumber) {
+        return flightReadRepository.findById(flightNumber)
                 .orElseThrow(() -> new RuntimeException("Voo não encontrado com o número: " + flightNumber));
     }
 }

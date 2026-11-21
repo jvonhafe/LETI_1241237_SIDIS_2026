@@ -1,6 +1,7 @@
 package com.aisafe.controller;
 
 import com.aisafe.application.usecase.*;
+import com.aisafe.cqrs.query.FlightReadModel;
 import com.aisafe.model.ScheduledFlight;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -80,7 +81,7 @@ class ScheduledFlightControllerTest {
 
     @Test
     void deveListarTodosOsVoos() throws Exception {
-        ScheduledFlight voo1 = new ScheduledFlight("TP123", "AC-01", "LIS", "OPO", LocalDateTime.now(), LocalDateTime.now().plusHours(2), "SCHEDULED");
+        FlightReadModel voo1 = new FlightReadModel("TP123", "AC-01", "LIS", "OPO", LocalDateTime.now(), LocalDateTime.now().plusHours(2), "SCHEDULED");
 
         when(getAllFlightsUseCase.execute()).thenReturn(Arrays.asList(voo1));
 
@@ -91,7 +92,7 @@ class ScheduledFlightControllerTest {
 
     @Test
     void deveRetornarVooPorNumero() throws Exception {
-        ScheduledFlight voo = new ScheduledFlight("TP123", "AC-01", "LIS", "OPO", LocalDateTime.now(), LocalDateTime.now().plusHours(2), "SCHEDULED");
+        FlightReadModel voo = new FlightReadModel("TP123", "AC-01", "LIS", "OPO", LocalDateTime.now(), LocalDateTime.now().plusHours(2), "SCHEDULED");
 
         when(getFlightByNumberUseCase.execute("TP123")).thenReturn(voo);
 
@@ -132,7 +133,7 @@ class ScheduledFlightControllerTest {
 
     @Test
     void deveRetornarDetalhesDoVooComAeronave() throws Exception {
-        ScheduledFlight voo = new ScheduledFlight("TP123", "AC-01", "LIS", "OPO", LocalDateTime.now(), LocalDateTime.now().plusHours(2), "SCHEDULED");
+        FlightReadModel voo = new FlightReadModel("TP123", "AC-01", "LIS", "OPO", LocalDateTime.now(), LocalDateTime.now().plusHours(2), "SCHEDULED");
         Object mockAircraftDetails = Map.of("id", "AC-01", "model", "Boeing 737");
 
         Map<String, Object> mockResponse = Map.of(

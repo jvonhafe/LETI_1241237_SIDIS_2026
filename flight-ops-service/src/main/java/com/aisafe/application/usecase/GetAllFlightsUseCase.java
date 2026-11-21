@@ -1,20 +1,20 @@
 package com.aisafe.application.usecase;
 
-import com.aisafe.model.ScheduledFlight;
-import com.aisafe.repository.ScheduledFlightRepository;
+import com.aisafe.cqrs.query.FlightReadModel;
+import com.aisafe.cqrs.query.FlightReadModelRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class GetAllFlightsUseCase {
-    private final ScheduledFlightRepository flightRepository;
+    private final FlightReadModelRepository flightReadRepository;
 
-    public GetAllFlightsUseCase(ScheduledFlightRepository flightRepository) {
-        this.flightRepository = flightRepository;
+    public GetAllFlightsUseCase(FlightReadModelRepository flightReadRepository) {
+        this.flightReadRepository = flightReadRepository;
     }
 
-    public List<ScheduledFlight> execute() {
-        return flightRepository.findAll();
+    public List<FlightReadModel> execute() {
+        return flightReadRepository.findAll();
     }
 }

@@ -1,17 +1,17 @@
 package com.aisafe.controller;
 
 import com.aisafe.application.usecase.*;
+import com.aisafe.cqrs.query.FlightReadModel;
 import com.aisafe.model.ScheduledFlight;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/flights")
-@PreAuthorize("hasAnyRole('ADMIN', 'ATCC')")
+@PreAuthorize("hasAnyRole('ADMIN', 'ATCC', 'SERVICE')")
 public class ScheduledFlightController {
 
     private final CreateFlightUseCase createFlightUseCase;
@@ -41,12 +41,12 @@ public class ScheduledFlightController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ScheduledFlight>> getAllFlights() {
+    public ResponseEntity<List<FlightReadModel>> getAllFlights() {
         return ResponseEntity.ok(getAllFlightsUseCase.execute());
     }
 
     @GetMapping("/{flightNumber}")
-    public ResponseEntity<ScheduledFlight> getFlightByNumber(@PathVariable String flightNumber) {
+    public ResponseEntity<FlightReadModel> getFlightByNumber(@PathVariable String flightNumber) {
         return ResponseEntity.ok(getFlightByNumberUseCase.execute(flightNumber));
     }
 
@@ -65,7 +65,6 @@ public class ScheduledFlightController {
     public ResponseEntity<?> getFlightWithAircraftDetails(
             @PathVariable String flightNumber,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
-
         return ResponseEntity.ok(getFlightWithDetailsUseCase.execute(flightNumber, authHeader));
     }
 }
