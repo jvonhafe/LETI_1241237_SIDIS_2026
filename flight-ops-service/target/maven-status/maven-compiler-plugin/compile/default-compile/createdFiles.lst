@@ -1,4 +1,3 @@
-com\aisafe\application\dto\ScheduledFlightDTO.class
 com\aisafe\application\usecase\CreateFlightUseCase.class
 com\aisafe\application\usecase\DeleteFlightUseCase.class
 com\aisafe\application\usecase\UpdateFlightUseCase.class
@@ -13,6 +12,5 @@ com\aisafe\repository\ScheduledFlightRepository.class
 com\aisafe\controller\ScheduledFlightController.class
 com\aisafe\config\AuditLoggingFilter.class
 com\aisafe\application\usecase\GetFlightByNumberUseCase.class
-com\aisafe\config\RestTemplateConfig.class
 com\aisafe\model\ScheduledFlight.class
 com\aisafe\application\usecase\GetFlightWithDetailsUseCase.class

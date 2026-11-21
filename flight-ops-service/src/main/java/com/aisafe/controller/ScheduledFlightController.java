@@ -7,11 +7,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/flights")
-@PreAuthorize("hasAnyRole('ADMIN', 'ATCC')")
+@PreAuthorize("hasAnyRole('ADMIN', 'ATCC', 'SERVICE')")
 public class ScheduledFlightController {
 
     private final CreateFlightUseCase createFlightUseCase;
@@ -46,8 +45,11 @@ public class ScheduledFlightController {
     }
 
     @GetMapping("/{flightNumber}")
-    public ResponseEntity<ScheduledFlight> getFlightByNumber(@PathVariable String flightNumber) {
-        return ResponseEntity.ok(getFlightByNumberUseCase.execute(flightNumber));
+    public ResponseEntity<ScheduledFlight> getFlightByNumber(
+            @PathVariable String flightNumber,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestHeader(value = "X-Forwarded", required = false, defaultValue = "false") boolean isForwarded) {
+        return ResponseEntity.ok(getFlightByNumberUseCase.execute(flightNumber, authHeader, isForwarded));
     }
 
     @PutMapping("/{flightNumber}")

@@ -93,7 +93,8 @@ class ScheduledFlightControllerTest {
     void deveRetornarVooPorNumero() throws Exception {
         ScheduledFlight voo = new ScheduledFlight("TP123", "AC-01", "LIS", "OPO", LocalDateTime.now(), LocalDateTime.now().plusHours(2), "SCHEDULED");
 
-        when(getFlightByNumberUseCase.execute("TP123")).thenReturn(voo);
+        // Alinhado com a nova assinatura do UseCase (flightNumber, authHeader, isForwarded)
+        when(getFlightByNumberUseCase.execute(eq("TP123"), any(), anyBoolean())).thenReturn(voo);
 
         mockMvc.perform(get("/api/flights/TP123"))
                 .andExpect(status().isOk())
