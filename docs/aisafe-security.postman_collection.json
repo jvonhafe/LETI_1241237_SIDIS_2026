@@ -1,63 +1,11 @@
 {
   "info": {
+    "_postman_id": "4bc69a06-81a3-4c9d-b6f2-389b55a834c6",
     "name": "AISafe - Security (HTTPS + JWT + RBAC)",
     "description": "Pre-requisitos: auth-service (8084), aircraft (8081), flight-ops (8083) e airportRoutes (8082, --server.port=8082) a correr em HTTPS; Postman > Settings > SSL certificate verification OFF. Collection Runner pela ordem das pastas (1 a 6). Cada pedido tem o seu Bearer ao nivel do pedido. A H2 esvazia quando um servico reinicia: repetir tudo desde a pasta 1. Tokens duram 60 min.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "variable": [
-    {
-      "key": "auth_url",
-      "value": "https://localhost:8084/api",
-      "type": "string"
-    },
-    {
-      "key": "aircraft_url",
-      "value": "https://localhost:8081/api",
-      "type": "string"
-    },
-    {
-      "key": "flight_ops_url",
-      "value": "https://localhost:8083/api",
-      "type": "string"
-    },
-    {
-      "key": "routes_url",
-      "value": "https://localhost:8082/api",
-      "type": "string"
-    },
-    {
-      "key": "token_admin",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "token_atcc",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "token_tech",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "token_backoffice",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "token_invalido",
-      "value": "abc.def.ghi",
-      "type": "string"
-    },
-    {
-      "key": "route_id",
-      "value": "1",
-      "type": "string"
-    }
-  ],
-  "auth": {
-    "type": "noauth"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "55149996",
+    "_collection_link": "https://go.postman.co/collection/55149996-4bc69a06-81a3-4c9d-b6f2-389b55a834c6?source=collection_link"
   },
   "item": [
     {
@@ -79,6 +27,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -105,11 +56,9 @@
                 "login"
               ]
             },
-            "auth": {
-              "type": "noauth"
-            },
             "description": "Guarda o token em token_admin. Sem token no pedido (No Auth)."
-          }
+          },
+          "response": []
         },
         {
           "name": "Login atcc_user",
@@ -127,6 +76,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -153,11 +105,9 @@
                 "login"
               ]
             },
-            "auth": {
-              "type": "noauth"
-            },
             "description": "Guarda o token em token_atcc. Sem token no pedido (No Auth)."
-          }
+          },
+          "response": []
         },
         {
           "name": "Login tech",
@@ -175,6 +125,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -201,11 +154,9 @@
                 "login"
               ]
             },
-            "auth": {
-              "type": "noauth"
-            },
             "description": "Guarda o token em token_tech. Sem token no pedido (No Auth)."
-          }
+          },
+          "response": []
         },
         {
           "name": "Login backoffice",
@@ -223,6 +174,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -249,11 +203,9 @@
                 "login"
               ]
             },
-            "auth": {
-              "type": "noauth"
-            },
             "description": "Guarda o token em token_backoffice. Sem token no pedido (No Auth)."
-          }
+          },
+          "response": []
         }
       ]
     },
@@ -274,6 +226,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -298,18 +260,9 @@
               "path": [
                 "aircraft-models"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_admin}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Atualizar Modelo",
@@ -325,6 +278,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [
               {
@@ -350,18 +313,9 @@
                 "aircraft-models",
                 "A320"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_admin}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Registar Aeronave",
@@ -377,6 +331,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -401,18 +365,9 @@
               "path": [
                 "aircraft"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_admin}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Obter Aeronave",
@@ -428,6 +383,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -439,18 +404,9 @@
                 "aircraft",
                 "CS-TTO"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_admin}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         }
       ]
     },
@@ -471,6 +427,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -495,18 +461,9 @@
               "path": [
                 "maintenance-templates"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_admin}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Criar Maintenance Record",
@@ -522,6 +479,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -546,18 +513,9 @@
               "path": [
                 "maintenance-records"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_admin}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Listar Registos Aeronave",
@@ -573,6 +531,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -585,18 +553,9 @@
                 "aircraft",
                 "CS-TTO"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_admin}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         }
       ]
     },
@@ -617,23 +576,6 @@
             }
           ],
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{routes_url}}/airports/detailed",
-              "host": [
-                "{{routes_url}}"
-              ],
-              "path": [
-                "airports",
-                "detailed"
-              ]
-            },
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -644,6 +586,13 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"iataCode\": \"OPO\",\n  \"name\": \"Francisco Sa Carneiro\",\n  \"city\": \"Porto\",\n  \"country\": \"Portugal\",\n  \"timezone\": \"Europe/Lisbon\",\n  \"facilities\": [\n    {\n      \"type\": \"TERMINAL\",\n      \"capacity\": 500,\n      \"description\": \"Terminal principal\"\n    }\n  ],\n  \"images\": [\n    {\n      \"imageUrl\": \"https://example.com/opo.jpg\",\n      \"description\": \"Vista exterior\"\n    }\n  ]\n}",
@@ -653,8 +602,19 @@
                 }
               }
             },
+            "url": {
+              "raw": "{{routes_url}}/airports/detailed",
+              "host": [
+                "{{routes_url}}"
+              ],
+              "path": [
+                "airports",
+                "detailed"
+              ]
+            },
             "description": "Escrita de aeroportos: ADMIN e BACKOFFICE. Se repetires sem reiniciar o servico, da erro porque o IATA ja existe."
-          }
+          },
+          "response": []
         },
         {
           "name": "Registar Aeroporto LIS (admin)",
@@ -670,23 +630,6 @@
             }
           ],
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{routes_url}}/airports/detailed",
-              "host": [
-                "{{routes_url}}"
-              ],
-              "path": [
-                "airports",
-                "detailed"
-              ]
-            },
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -697,6 +640,13 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"iataCode\": \"LIS\",\n  \"name\": \"Humberto Delgado\",\n  \"city\": \"Lisboa\",\n  \"country\": \"Portugal\",\n  \"timezone\": \"Europe/Lisbon\",\n  \"facilities\": [\n    {\n      \"type\": \"TERMINAL\",\n      \"capacity\": 800,\n      \"description\": \"Terminal principal\"\n    }\n  ],\n  \"images\": [\n    {\n      \"imageUrl\": \"https://example.com/lis.jpg\",\n      \"description\": \"Vista exterior\"\n    }\n  ]\n}",
@@ -705,8 +655,19 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{routes_url}}/airports/detailed",
+              "host": [
+                "{{routes_url}}"
+              ],
+              "path": [
+                "airports",
+                "detailed"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Obter Aeroporto OPO (atcc)",
@@ -722,6 +683,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_atcc}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -733,18 +704,9 @@
                 "airports",
                 "OPO"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_atcc}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Aeroportos agrupados por pais (admin)",
@@ -760,6 +722,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -771,18 +743,9 @@
                 "airports",
                 "grouped"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_admin}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Criar Rota OPO-LIS (admin)",
@@ -800,22 +763,6 @@
             }
           ],
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{routes_url}}/routes",
-              "host": [
-                "{{routes_url}}"
-              ],
-              "path": [
-                "routes"
-              ]
-            },
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -826,6 +773,13 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"originAirport\": \"OPO\",\n  \"destinationAirport\": \"LIS\",\n  \"estimatedFlightTimeMinutes\": 55,\n  \"minimumRange\": 400,\n  \"minimumCapacity\": 100,\n  \"distanceKm\": 274.0\n}",
@@ -835,8 +789,18 @@
                 }
               }
             },
+            "url": {
+              "raw": "{{routes_url}}/routes",
+              "host": [
+                "{{routes_url}}"
+              ],
+              "path": [
+                "routes"
+              ]
+            },
             "description": "Guarda o id da rota em route_id. Precisa de OPO e LIS registados antes."
-          }
+          },
+          "response": []
         },
         {
           "name": "Atualizar Rota (admin)",
@@ -852,23 +816,6 @@
             }
           ],
           "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{routes_url}}/routes/{{route_id}}",
-              "host": [
-                "{{routes_url}}"
-              ],
-              "path": [
-                "routes",
-                "{{route_id}}"
-              ]
-            },
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -879,6 +826,13 @@
                 }
               ]
             },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"estimatedFlightTimeMinutes\": 60,\n  \"minimumRange\": 400,\n  \"minimumCapacity\": 120,\n  \"distanceKm\": 280.0\n}",
@@ -887,8 +841,19 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{routes_url}}/routes/{{route_id}}",
+              "host": [
+                "{{routes_url}}"
+              ],
+              "path": [
+                "routes",
+                "{{route_id}}"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Historico da Rota (admin)",
@@ -904,6 +869,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -916,18 +891,9 @@
                 "{{route_id}}",
                 "history"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_admin}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Rotas ativas ordenadas (atcc)",
@@ -943,6 +909,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_atcc}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -955,18 +931,9 @@
                 "active",
                 "sorted"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_atcc}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         }
       ]
     },
@@ -987,6 +954,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -1011,18 +988,9 @@
               "path": [
                 "flights"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_admin}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "2. Listar Todos os Voos",
@@ -1038,6 +1006,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1048,18 +1026,9 @@
               "path": [
                 "flights"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_admin}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "3. Obter Voo Especifico",
@@ -1075,6 +1044,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1086,18 +1065,9 @@
                 "flights",
                 "TP123"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_admin}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "4. Atualizar Voo",
@@ -1113,6 +1083,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [
               {
@@ -1138,18 +1118,9 @@
                 "flights",
                 "TP123"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_admin}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "5. AGREGACAO (Detalhes do Voo)",
@@ -1166,6 +1137,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1178,18 +1159,9 @@
                 "TP123",
                 "details"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_admin}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "6. Apagar Voo",
@@ -1205,6 +1177,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "DELETE",
             "header": [],
             "url": {
@@ -1216,18 +1198,9 @@
                 "flights",
                 "TP123"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_admin}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         }
       ]
     },
@@ -1248,6 +1221,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1258,11 +1234,9 @@
               "path": [
                 "flights"
               ]
-            },
-            "auth": {
-              "type": "noauth"
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "flights token invalido -> 401",
@@ -1278,6 +1252,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_invalido}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1288,18 +1272,9 @@
               "path": [
                 "flights"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_invalido}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "flights tech -> 403",
@@ -1315,6 +1290,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tech}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1325,18 +1310,9 @@
               "path": [
                 "flights"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_tech}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "flights backoffice -> 403",
@@ -1352,6 +1328,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_backoffice}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1362,18 +1348,9 @@
               "path": [
                 "flights"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_backoffice}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "flights atcc -> 200",
@@ -1389,6 +1366,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_atcc}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1399,18 +1386,9 @@
               "path": [
                 "flights"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_atcc}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "flights admin -> 200",
@@ -1426,6 +1404,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1436,18 +1424,9 @@
               "path": [
                 "flights"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_admin}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "aircraft-models sem token -> 401",
@@ -1463,6 +1442,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1473,11 +1455,9 @@
               "path": [
                 "aircraft-models"
               ]
-            },
-            "auth": {
-              "type": "noauth"
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "aircraft-models tech -> 403",
@@ -1493,6 +1473,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tech}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1503,18 +1493,9 @@
               "path": [
                 "aircraft-models"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_tech}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "aircraft-models atcc -> 200",
@@ -1530,6 +1511,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_atcc}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1540,18 +1531,9 @@
               "path": [
                 "aircraft-models"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_atcc}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "maintenance-records sem token -> 401",
@@ -1567,6 +1549,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1579,11 +1564,9 @@
                 "aircraft",
                 "CS-TTO"
               ]
-            },
-            "auth": {
-              "type": "noauth"
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "maintenance-records atcc -> 403",
@@ -1599,6 +1582,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_atcc}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1611,18 +1604,9 @@
                 "aircraft",
                 "CS-TTO"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_atcc}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "maintenance-records tech -> 200",
@@ -1638,6 +1622,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tech}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1650,18 +1644,9 @@
                 "aircraft",
                 "CS-TTO"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_tech}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "criar template backoffice -> 403",
@@ -1677,22 +1662,6 @@
             }
           ],
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{aircraft_url}}/maintenance-templates",
-              "host": [
-                "{{aircraft_url}}"
-              ],
-              "path": [
-                "maintenance-templates"
-              ]
-            },
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1703,6 +1672,13 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"templateId\": \"9\",\n  \"templateName\": \"x\",\n  \"templateType\": \"INSPECTION\",\n  \"applicableAircraftModelIds\": [\n    \"A320\"\n  ],\n  \"checklist\": [\n    \"Inspecao visual\",\n    \"Teste de motores\"\n  ]\n}",
@@ -1711,8 +1687,18 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{aircraft_url}}/maintenance-templates",
+              "host": [
+                "{{aircraft_url}}"
+              ],
+              "path": [
+                "maintenance-templates"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "airports sem token -> 401",
@@ -1728,6 +1714,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1739,11 +1728,9 @@
                 "airports",
                 "grouped"
               ]
-            },
-            "auth": {
-              "type": "noauth"
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "airports tech -> 403",
@@ -1759,6 +1746,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tech}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1770,18 +1767,9 @@
                 "airports",
                 "grouped"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_tech}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "airports backoffice -> 200",
@@ -1797,6 +1785,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_backoffice}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1808,18 +1806,9 @@
                 "airports",
                 "grouped"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_backoffice}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "airports atcc -> 200",
@@ -1835,6 +1824,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_atcc}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1846,18 +1845,9 @@
                 "airports",
                 "grouped"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_atcc}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "routes sem token -> 401",
@@ -1873,6 +1863,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1885,11 +1878,9 @@
                 "active",
                 "sorted"
               ]
-            },
-            "auth": {
-              "type": "noauth"
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "routes tech -> 403",
@@ -1905,6 +1896,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tech}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1917,18 +1918,9 @@
                 "active",
                 "sorted"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_tech}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "routes backoffice -> 403",
@@ -1944,6 +1936,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_backoffice}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1956,18 +1958,9 @@
                 "active",
                 "sorted"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_backoffice}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "routes atcc -> autorizado",
@@ -1983,6 +1976,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_atcc}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1995,18 +1998,9 @@
                 "active",
                 "sorted"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_atcc}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "registar aeroporto tech -> 403",
@@ -2022,23 +2016,6 @@
             }
           ],
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{routes_url}}/airports/detailed",
-              "host": [
-                "{{routes_url}}"
-              ],
-              "path": [
-                "airports",
-                "detailed"
-              ]
-            },
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -2049,6 +2026,13 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"iataCode\": \"XXX\",\n  \"name\": \"x\",\n  \"city\": \"x\",\n  \"country\": \"Portugal\",\n  \"timezone\": \"Europe/Lisbon\",\n  \"facilities\": [\n    {\n      \"type\": \"TERMINAL\",\n      \"capacity\": 1,\n      \"description\": \"Terminal principal\"\n    }\n  ],\n  \"images\": [\n    {\n      \"imageUrl\": \"https://example.com/xxx.jpg\",\n      \"description\": \"Vista exterior\"\n    }\n  ]\n}",
@@ -2057,8 +2041,19 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{routes_url}}/airports/detailed",
+              "host": [
+                "{{routes_url}}"
+              ],
+              "path": [
+                "airports",
+                "detailed"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "registar aeroporto atcc -> 403",
@@ -2074,23 +2069,6 @@
             }
           ],
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{routes_url}}/airports/detailed",
-              "host": [
-                "{{routes_url}}"
-              ],
-              "path": [
-                "airports",
-                "detailed"
-              ]
-            },
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -2101,6 +2079,13 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"iataCode\": \"XXX\",\n  \"name\": \"x\",\n  \"city\": \"x\",\n  \"country\": \"Portugal\",\n  \"timezone\": \"Europe/Lisbon\",\n  \"facilities\": [\n    {\n      \"type\": \"TERMINAL\",\n      \"capacity\": 1,\n      \"description\": \"Terminal principal\"\n    }\n  ],\n  \"images\": [\n    {\n      \"imageUrl\": \"https://example.com/xxx.jpg\",\n      \"description\": \"Vista exterior\"\n    }\n  ]\n}",
@@ -2109,8 +2094,19 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{routes_url}}/airports/detailed",
+              "host": [
+                "{{routes_url}}"
+              ],
+              "path": [
+                "airports",
+                "detailed"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "criar rota backoffice -> 403",
@@ -2126,22 +2122,6 @@
             }
           ],
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{routes_url}}/routes",
-              "host": [
-                "{{routes_url}}"
-              ],
-              "path": [
-                "routes"
-              ]
-            },
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -2152,6 +2132,13 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"originAirport\": \"OPO\",\n  \"destinationAirport\": \"LIS\",\n  \"estimatedFlightTimeMinutes\": 55,\n  \"minimumRange\": 400,\n  \"minimumCapacity\": 100,\n  \"distanceKm\": 274.0\n}",
@@ -2160,8 +2147,18 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{routes_url}}/routes",
+              "host": [
+                "{{routes_url}}"
+              ],
+              "path": [
+                "routes"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "atualizar rota backoffice -> autorizado",
@@ -2177,23 +2174,6 @@
             }
           ],
           "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{routes_url}}/routes/{{route_id}}",
-              "host": [
-                "{{routes_url}}"
-              ],
-              "path": [
-                "routes",
-                "{{route_id}}"
-              ]
-            },
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -2204,6 +2184,13 @@
                 }
               ]
             },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"estimatedFlightTimeMinutes\": 60,\n  \"minimumRange\": 400,\n  \"minimumCapacity\": 120,\n  \"distanceKm\": 280.0\n}",
@@ -2212,10 +2199,192 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{routes_url}}/routes/{{route_id}}",
+              "host": [
+                "{{routes_url}}"
+              ],
+              "path": [
+                "routes",
+                "{{route_id}}"
+              ]
             }
-          }
+          },
+          "response": []
         }
       ]
+    },
+    {
+      "name": "7. FlightOps CQRS Sync (8083 <-> 8085)",
+      "item": [
+        {
+          "name": "1. Criar Voo (8083)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado [200, 201]\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"flightNumber\": \"TP123\",\n  \"aircraftId\": \"CS-TTO\",\n  \"originAirportId\": \"OPO\",\n  \"destinationAirportId\": \"LIS\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{flight_ops_url}}/flights",
+              "host": [
+                "{{flight_ops_url}}"
+              ],
+              "path": [
+                "flights"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Voo Sincronizado (8085)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3. Atualizar Voo (8085)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4. Confirmar Update (8083)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado [200]\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{flight_ops_url}}/flights/TP123",
+              "host": [
+                "{{flight_ops_url}}"
+              ],
+              "path": [
+                "flights",
+                "TP123"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5. Apagar Voo (8085)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "auth_url",
+      "value": "https://localhost:8084/api"
+    },
+    {
+      "key": "aircraft_url",
+      "value": "https://localhost:8081/api"
+    },
+    {
+      "key": "flight_ops_url",
+      "value": "https://localhost:8083/api"
+    },
+    {
+      "key": "routes_url",
+      "value": "https://localhost:8082/api"
+    },
+    {
+      "key": "token_admin",
+      "value": ""
+    },
+    {
+      "key": "token_atcc",
+      "value": ""
+    },
+    {
+      "key": "token_tech",
+      "value": ""
+    },
+    {
+      "key": "token_backoffice",
+      "value": ""
+    },
+    {
+      "key": "token_invalido",
+      "value": "abc.def.ghi"
+    },
+    {
+      "key": "route_id",
+      "value": "1"
     }
   ]
 }

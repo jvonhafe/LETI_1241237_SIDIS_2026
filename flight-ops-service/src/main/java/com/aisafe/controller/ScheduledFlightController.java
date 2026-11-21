@@ -1,6 +1,7 @@
 package com.aisafe.controller;
 
 import com.aisafe.application.usecase.*;
+import com.aisafe.cqrs.query.FlightReadModel;
 import com.aisafe.model.ScheduledFlight;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,16 +41,13 @@ public class ScheduledFlightController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ScheduledFlight>> getAllFlights() {
+    public ResponseEntity<List<FlightReadModel>> getAllFlights() {
         return ResponseEntity.ok(getAllFlightsUseCase.execute());
     }
 
     @GetMapping("/{flightNumber}")
-    public ResponseEntity<ScheduledFlight> getFlightByNumber(
-            @PathVariable String flightNumber,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestHeader(value = "X-Forwarded", required = false, defaultValue = "false") boolean isForwarded) {
-        return ResponseEntity.ok(getFlightByNumberUseCase.execute(flightNumber, authHeader, isForwarded));
+    public ResponseEntity<FlightReadModel> getFlightByNumber(@PathVariable String flightNumber) {
+        return ResponseEntity.ok(getFlightByNumberUseCase.execute(flightNumber));
     }
 
     @PutMapping("/{flightNumber}")
@@ -67,7 +65,6 @@ public class ScheduledFlightController {
     public ResponseEntity<?> getFlightWithAircraftDetails(
             @PathVariable String flightNumber,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
-
         return ResponseEntity.ok(getFlightWithDetailsUseCase.execute(flightNumber, authHeader));
     }
 }

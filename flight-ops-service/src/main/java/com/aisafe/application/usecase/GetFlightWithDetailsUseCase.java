@@ -1,7 +1,7 @@
 package com.aisafe.application.usecase;
 
-import com.aisafe.model.ScheduledFlight;
-import com.aisafe.repository.ScheduledFlightRepository;
+import com.aisafe.cqrs.query.FlightReadModel;
+import com.aisafe.cqrs.query.FlightReadModelRepository;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -13,16 +13,16 @@ import java.util.Map;
 
 @Service
 public class GetFlightWithDetailsUseCase {
-    private final ScheduledFlightRepository flightRepository;
+    private final FlightReadModelRepository flightReadRepository;
     private final RestTemplate restTemplate;
 
-    public GetFlightWithDetailsUseCase(ScheduledFlightRepository flightRepository, RestTemplate restTemplate) {
-        this.flightRepository = flightRepository;
+    public GetFlightWithDetailsUseCase(FlightReadModelRepository flightReadRepository, RestTemplate restTemplate) {
+        this.flightReadRepository = flightReadRepository;
         this.restTemplate = restTemplate;
     }
 
     public Map<String, Object> execute(String flightNumber, String authHeader) {
-        ScheduledFlight flight = flightRepository.findById(flightNumber)
+        FlightReadModel flight = flightReadRepository.findById(flightNumber)
                 .orElseThrow(() -> new RuntimeException("Voo não encontrado: " + flightNumber));
 
         String aircraftServiceUrl = "https://localhost:8081/api/aircraft/" + flight.getAircraftId();

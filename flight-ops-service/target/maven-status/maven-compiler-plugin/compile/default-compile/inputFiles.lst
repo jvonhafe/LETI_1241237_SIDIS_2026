@@ -6,6 +6,7 @@ C:\Users\HP\LETI_1241237_SIDIS_2026\flight-ops-service\src\main\java\com\aisafe\
 C:\Users\HP\LETI_1241237_SIDIS_2026\flight-ops-service\src\main\java\com\aisafe\application\usecase\GetFlightWithDetailsUseCase.java
 C:\Users\HP\LETI_1241237_SIDIS_2026\flight-ops-service\src\main\java\com\aisafe\application\usecase\UpdateFlightUseCase.java
 C:\Users\HP\LETI_1241237_SIDIS_2026\flight-ops-service\src\main\java\com\aisafe\config\AuditLoggingFilter.java
+C:\Users\HP\LETI_1241237_SIDIS_2026\flight-ops-service\src\main\java\com\aisafe\config\RabbitMQConfig.java
 C:\Users\HP\LETI_1241237_SIDIS_2026\flight-ops-service\src\main\java\com\aisafe\config\RestTemplateConfig.java
 C:\Users\HP\LETI_1241237_SIDIS_2026\flight-ops-service\src\main\java\com\aisafe\config\SecureHttp.java
 C:\Users\HP\LETI_1241237_SIDIS_2026\flight-ops-service\src\main\java\com\aisafe\config\ServiceTokenProvider.java
@@ -14,6 +15,11 @@ C:\Users\HP\LETI_1241237_SIDIS_2026\flight-ops-service\src\main\java\com\aisafe\
 C:\Users\HP\LETI_1241237_SIDIS_2026\flight-ops-service\src\main\java\com\aisafe\core\security\JwtAuthenticationFilter.java
 C:\Users\HP\LETI_1241237_SIDIS_2026\flight-ops-service\src\main\java\com\aisafe\core\security\JwtService.java
 C:\Users\HP\LETI_1241237_SIDIS_2026\flight-ops-service\src\main\java\com\aisafe\core\security\SecurityConfig.java
+C:\Users\HP\LETI_1241237_SIDIS_2026\flight-ops-service\src\main\java\com\aisafe\cqrs\event\FlightEvent.java
+C:\Users\HP\LETI_1241237_SIDIS_2026\flight-ops-service\src\main\java\com\aisafe\cqrs\event\FlightEventListener.java
+C:\Users\HP\LETI_1241237_SIDIS_2026\flight-ops-service\src\main\java\com\aisafe\cqrs\event\FlightEventPublisher.java
+C:\Users\HP\LETI_1241237_SIDIS_2026\flight-ops-service\src\main\java\com\aisafe\cqrs\query\FlightReadModel.java
+C:\Users\HP\LETI_1241237_SIDIS_2026\flight-ops-service\src\main\java\com\aisafe\cqrs\query\FlightReadModelRepository.java
 C:\Users\HP\LETI_1241237_SIDIS_2026\flight-ops-service\src\main\java\com\aisafe\exception\GlobalExceptionHandler.java
 C:\Users\HP\LETI_1241237_SIDIS_2026\flight-ops-service\src\main\java\com\aisafe\FlightOpsApplication.java
 C:\Users\HP\LETI_1241237_SIDIS_2026\flight-ops-service\src\main\java\com\aisafe\model\ScheduledFlight.java
