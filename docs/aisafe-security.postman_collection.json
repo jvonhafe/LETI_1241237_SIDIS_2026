@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "AISafe - Security (HTTPS + JWT + RBAC)",
-    "description": "Pre-requisitos: auth-service (8084), aircraft (8081), flight-ops (8083) e airportRoutes (8082, --server.port=8082) a correr em HTTPS; Postman > Settings > SSL certificate verification OFF. Collection Runner pela ordem das pastas (1 a 6). Cada pedido tem o seu Bearer ao nivel do pedido. A H2 esvazia quando um servico reinicia: repetir tudo desde a pasta 1. Tokens duram 60 min.",
+    "description": "Pre-requisitos: auth-service (8084), aircraft (8081), flight-ops (8083) e airportRoutes (8082, --server.port=8082) a correr em HTTPS; Postman > Settings > SSL certificate verification OFF. Collection Runner pela ordem das pastas (1 a 6). Cada pedido tem o seu Bearer ao nivel do pedido. A H2 esvazia quando um servico reinicia: repetir tudo desde a pasta 1. Tokens duram 60 min. Pasta 7 (A2): requer 2 instancias do auth-service (8084 e 8087) e RabbitMQ ligado.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -53,6 +53,21 @@
     {
       "key": "route_id",
       "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "auth_url_2",
+      "value": "https://localhost:8087/api",
+      "type": "string"
+    },
+    {
+      "key": "token_admin_2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "new_user",
+      "value": "",
       "type": "string"
     }
   ],
@@ -2213,6 +2228,263 @@
                 }
               }
             }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Auth - 2 instancias + AMQP (A2)",
+      "item": [
+        {
+          "name": "Login admin (instancia 2 - 8087)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado [200]\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "pm.collectionVariables.set(\"token_admin_2\", pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{auth_url_2}}/auth/login",
+              "host": [
+                "{{auth_url_2}}"
+              ],
+              "path": [
+                "{{auth_url_2}}",
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin#2026\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Utilizadores iniciais existem nas duas instancias (cada uma semeia a sua BD)."
+          }
+        },
+        {
+          "name": "Token da instancia 2 aceite pelo flight-ops -> 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado [200]\", function () { pm.expect(pm.response.code).to.eql(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{flight_ops_url}}/flights",
+              "host": [
+                "{{flight_ops_url}}"
+              ],
+              "path": [
+                "{{flight_ops_url}}",
+                "flights"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin_2}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Prova que o JWT e sem estado: qualquer instancia do auth emite tokens validos para os outros servicos (mesmo segredo)."
+          }
+        },
+        {
+          "name": "Criar utilizador na instancia 1 (8084) -> 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado [201]\", function () { pm.expect(pm.response.code).to.eql(201); });"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"new_user\", \"pilot\" + Date.now());"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{auth_url}}/auth/users",
+              "host": [
+                "{{auth_url}}"
+              ],
+              "path": [
+                "{{auth_url}}",
+                "auth",
+                "users"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{new_user}}\",\n  \"password\": \"Pilot#2026Test\",\n  \"role\": \"ATCC\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login do novo utilizador na instancia 1 -> 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado [200]\", function () { pm.expect(pm.response.code).to.eql(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{auth_url}}/auth/login",
+              "host": [
+                "{{auth_url}}"
+              ],
+              "path": [
+                "{{auth_url}}",
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{new_user}}\",\n  \"password\": \"Pilot#2026Test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login do novo utilizador na instancia 2 (replicado por AMQP) -> 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status esperado [200]\", function () { pm.expect(pm.response.code).to.eql(200); });"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Dá tempo ao RabbitMQ para entregar o evento UserCreated à outra instância.",
+                  "setTimeout(function () {}, 1500);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{auth_url_2}}/auth/login",
+              "host": [
+                "{{auth_url_2}}"
+              ],
+              "path": [
+                "{{auth_url_2}}",
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{new_user}}\",\n  \"password\": \"Pilot#2026Test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "So da 200 se o RabbitMQ estiver ligado: a instancia 2 recebeu o evento UserCreated e gravou o utilizador na SUA BD. Com o RabbitMQ parado da 401 (consistencia eventual / tolerancia a falhas)."
           }
         }
       ]
