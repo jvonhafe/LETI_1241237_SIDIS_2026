@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import com.aisafe.cqrs.query.MaintenanceReadModel;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -56,7 +57,7 @@ public class MaintenanceRecordController {
     @Operation(summary = "Listar Registos de Manutenção por Aeronave")
     @PreAuthorize("hasAnyRole('ADMIN', 'MAINTENANCE_TECH')")
     @GetMapping("/aircraft/{registration}")
-    public List<MaintenanceRecord> recordsForAircraft(@PathVariable String registration) {
+    public List<MaintenanceReadModel> recordsForAircraft(@PathVariable String registration) {
         return maintenanceService.recordsForAircraft(registration);
     }
 
@@ -92,9 +93,7 @@ public class MaintenanceRecordController {
         );
     }
 
-    // ==========================================
-    // ENDPOINTS DA FASE 2 (US218 A US222)
-    // ==========================================
+    //us18 a us22
 
     @Operation(summary = "US218 - Pesquisar Registos (Paginação)")
     @PreAuthorize("hasAnyRole('ADMIN', 'MAINTENANCE_TECH')")
@@ -140,7 +139,6 @@ public class MaintenanceRecordController {
     @PreAuthorize("hasAnyRole('ADMIN', 'ATCC')")
     @GetMapping("/alerts")
     public List<Map<String, Object>> getMaintenanceAlerts() {
-        // Retorna um mock de alertas pois necessitaria cruzar com o histórico de voos real da Fase 1/2.
         return List.of(Map.of(
                 "alert", "Aircraft CS-TPA exceeds scheduled maintenance threshold based on flight hours."
         ));

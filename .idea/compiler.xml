@@ -20,6 +20,14 @@
         </processorPath>
         <module name="demo (2)" />
         <module name="demo" />
+      </profile>
+      <profile name="Annotation profile for demo (1)" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
+        </processorPath>
         <module name="demo (1)" />
       </profile>
     </annotationProcessing>
@@ -29,7 +37,7 @@
       <module name="auth-service" options="-parameters" />
       <module name="demo" options="-parameters" />
       <module name="demo (1)" options="-parameters" />
-      <module name="demo (2)" options="-parameters" />
+      <module name="demo (2)" options="" />
       <module name="flight-ops-service" options="-parameters" />
     </option>
   </component>

@@ -1,6 +1,8 @@
 package com.aisafe.application.usecase;
 
 import com.aisafe.core.exception.DuplicateResourceException;
+import com.aisafe.cqrs.event.AircraftEventPublisher;
+import com.aisafe.cqrs.event.AircraftModelEvent;
 import com.aisafe.model.AircraftModel;
 import com.aisafe.model.Capacity;
 import com.aisafe.model.MediaImage;
@@ -11,9 +13,12 @@ import org.springframework.stereotype.Service;
 public class RegisterAircraftModelUseCase {
 
     private final AircraftModelRepository repository;
+    private final AircraftEventPublisher eventPublisher;
 
-    public RegisterAircraftModelUseCase(AircraftModelRepository repository) {
+    public RegisterAircraftModelUseCase(AircraftModelRepository repository,
+                                        AircraftEventPublisher eventPublisher) {
         this.repository = repository;
+        this.eventPublisher = eventPublisher;
     }
 
     public AircraftModel execute(String modelId, String modelName, String manufacturer, int maxCapacity,
@@ -40,6 +45,19 @@ public class RegisterAircraftModelUseCase {
             model.setImage(image);
         }
 
-        return repository.save(model);
+        AircraftModel saved = repository.save(model);
+
+        eventPublisher.publishModel(new AircraftModelEvent(
+                "CREATED",
+                saved.getModelId(),
+                saved.getModelName(),
+                saved.getManufacturer(),
+                maxCapacity,
+                saved.getFuelCapacity(),
+                saved.getMaxRange(),
+                saved.getCruisingSpeed()
+        ));
+
+        return saved;
     }
 }
