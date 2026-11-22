@@ -1,35 +1,47 @@
 @startuml c4_level3_aircraft_components
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
-title "C4 Level 3: Component Diagram - Aircraft & Maintenance Service"
+title "C4 Level 3: Component Diagram - Aircraft & Maintenance Service (CQRS)"
 
-Container_Boundary(aircraft_service, "Aircraft & Maintenance Service (Porta 8081)") {
-    Component(security_filter, "JwtAuthenticationFilter", "Spring Security", "Interceta pedidos REST, valida a assinatura JWT e rejeita chamadas não autorizadas (403 Forbidden).")
+Container_Boundary(aircraft_service, "Aircraft & Maintenance Service (:8081 / :8086)") {
+    Component(security_filter, "JwtAuthenticationFilter", "Spring Security", "Valida a assinatura JWT e aplica controlo RBAC.")
 
-    Component(aircraft_controller, "AircraftController", "Spring REST Controller", "Expõe os endpoints para gestão e agregação de dados de aeronaves.")
-    Component(maintenance_controller, "MaintenanceRecordController", "Spring REST Controller", "Expõe endpoints para as US de manutenção.")
+    Component(controllers, "REST Controllers", "Spring REST", "AircraftController, AircraftModelController, MaintenanceRecordController, MaintenanceTemplateController.")
 
-    Component(register_uc, "RegisterAircraftUseCase", "Spring Service", "Lógica de negócio para registo de novos aviões na frota.")
-    Component(query_uc, "AircraftQueryUseCase", "Spring Service", "Lógica para devolver detalhes completos da aeronave.")
+    Component(write_services, "Write Use Cases & Services", "Application Layer", "RegisterAircraftUseCase, RegisterAircraftModelUseCase, UpdateAircraftModelUseCase, MaintenanceService.")
+    Component(query_services, "Query Services & Use Cases", "Application Layer", "MaintenanceQueryService, GetFleetAvailabilityUseCase, ReadModelInitializer.")
 
-    Component(aircraft_repo, "AircraftRepository", "Spring Data JPA", "Interface de abstração para operações na base de dados de aeronaves.")
-    Component(maintenance_repo, "MaintenanceRecordRepository", "Spring Data JPA", "Abstração para persistência de registos de manutenção.")
+    Component(rabbit_config, "RabbitMQConfig", "Spring @Configuration", "Configura exchanges, filas por instância e serialização JSON.")
+    Component(event_pub, "AircraftEventPublisher", "Spring Component", "Publica AircraftEvent, AircraftModelEvent e MaintenanceEvent no broker.")
+    Component(event_listener, "AircraftEventListener", "Spring @RabbitListener", "Consome eventos do broker e atualiza os Read Models locais.")
+
+    Component(write_repos, "Write Repositories", "Spring Data JPA", "AircraftRepository, AircraftModelRepository, MaintenanceRecordRepository, MaintenanceTemplateRepository.")
+    Component(read_repos, "Read Model Repositories", "Spring Data JPA", "AircraftReadModelRepository, AircraftModelReadModelRepository, MaintenanceReadModelRepository.")
 }
 
-Container(flight_ops, "Flight Operations Service", "Java", "Cliente P2P agregador.")
-ContainerDb(db, "Aircraft Database", "Relational DB", "Estado guardado.")
+Person(user, "Cliente (Admin / Tech / ATCC)", "Inicia pedidos REST")
+Container(flight_ops, "Flight Operations Service", "Java", "Cliente P2P agregador")
+Container(rabbitmq, "RabbitMQ Broker", "AMQP", "Troca de eventos CQRS")
+ContainerDb(db, "Aircraft H2 Database", "H2 In-Memory", "Base de dados isolada da instância")
 
-Rel(flight_ops, security_filter, "GET /api/aircraft/{id}", "REST/JWT")
-Rel(security_filter, aircraft_controller, "Repassa pedido válido")
+Rel(user, security_filter, "Pedidos REST", "HTTPS/JWT")
+Rel(flight_ops, security_filter, "GET /api/aircraft/{id}", "HTTPS/JWT")
+Rel(security_filter, controllers, "Repassa pedido autenticado")
 
-Rel(aircraft_controller, register_uc, "Usa")
-Rel(aircraft_controller, query_uc, "Usa")
-Rel(maintenance_controller, maintenance_repo, "Lê/Escreve")
+Rel(controllers, write_services, "Comandos (POST/PUT/DELETE)")
+Rel(controllers, query_services, "Consultas (GET)")
 
-Rel(register_uc, aircraft_repo, "Lê/Escreve")
-Rel(query_uc, aircraft_repo, "Lê")
+Rel(write_services, write_repos, "Persiste Write Model")
+Rel(write_services, event_pub, "Publica evento de domínio")
+Rel(event_pub, rabbitmq, "Envia evento", "AMQP")
 
-Rel(aircraft_repo, db, "Lê e Escreve", "JDBC")
-Rel(maintenance_repo, db, "Lê e Escreve", "JDBC")
+Rel(rabbitmq, event_listener, "Entrega evento", "AMQP")
+Rel(event_listener, read_repos, "Atualiza Read Models locais")
+Rel(rabbit_config, rabbitmq, "Declara topologia AMQP")
+
+Rel(query_services, read_repos, "Lê Read Models locais")
+
+Rel(write_repos, db, "Lê e Escreve", "JDBC")
+Rel(read_repos, db, "Lê e Escreve", "JDBC")
 
 @enduml

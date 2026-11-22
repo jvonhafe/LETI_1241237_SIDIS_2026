@@ -1,22 +1,31 @@
 @startuml c4_level2_aircraft_container
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
-title "C4 Level 2: Container Diagram - Aircraft & Maintenance Service"
+title "C4 Level 2: Container Diagram - Aircraft & Maintenance Service (CQRS + RabbitMQ)"
 
-Person(admin, "Administrador / Manutenção", "Gere frota, rotas e manutenções.")
+Person(admin, "Administrador / Manutenção", "Gere frota, modelos e registos de manutenção.")
 
 System_Boundary(aisafe, "AISafe Distributed System") {
-    Container(aircraft_service, "Aircraft & Maintenance Service", "Java, Spring Boot", "Gere dados operacionais de aeronaves, modelos e registos de manutenção. Valida tokens JWT.")
-    Container(flight_ops_service, "Flight Operations Service", "Java, Spring Boot", "Agenda voos e atua como agregador de dados (P2P Forwarding).")
-    Container(airport_routes_service, "Airports & Routes Service", "Java, Spring Boot", "Catálogo de aeroportos e gestão de rotas.")
+    Container(aircraft_a, "Aircraft Service (:8081)", "Java, Spring Boot", "Gere modelos, aeronaves e manutenções. Publica e consome eventos CQRS.")
+    ContainerDb(aircraft_db_a, "Aircraft DB (:8081)", "H2 In-Memory", "Base de dados isolada (Write & Read Models) da instância 8081.")
 
-    ContainerDb(aircraft_db, "Aircraft Database", "H2 / PostgreSQL", "Armazena modelos, instâncias de frota e registos de manutenção.")
+    Container(aircraft_b, "Aircraft Service (:8086)", "Java, Spring Boot", "Segunda instância independente sincronizada via RabbitMQ.")
+    ContainerDb(aircraft_db_b, "Aircraft DB (:8086)", "H2 In-Memory", "Base de dados isolada (Write & Read Models) da instância 8086.")
+
+    Container(rabbitmq, "RabbitMQ Broker", "AMQP :5672", "Propaga AircraftEvent, AircraftModelEvent e MaintenanceEvent entre instâncias.")
+
+    Container(flight_ops_service, "Flight Operations Service", "Java, Spring Boot", "Agenda voos e agrega detalhes da aeronave via HTTPS + JWT.")
 }
 
-Rel(admin, flight_ops_service, "Agenda voos", "HTTPS/REST")
-Rel(admin, aircraft_service, "Gere aeronaves e manutenções", "HTTPS/REST")
+Rel(admin, aircraft_a, "Comandos e consultas", "HTTPS/REST + JWT")
+Rel(admin, aircraft_b, "Comandos e consultas", "HTTPS/REST + JWT")
 
-Rel(flight_ops_service, aircraft_service, "Agrega detalhes da aeronave (P2P)", "HTTPS/REST + JWT", $tags="sync")
-Rel(aircraft_service, aircraft_db, "Lê e escreve dados de frota", "JDBC")
+Rel(aircraft_a, aircraft_db_a, "Lê e escreve (Write/Read)", "JDBC")
+Rel(aircraft_b, aircraft_db_b, "Lê e escreve (Write/Read)", "JDBC")
+
+Rel(aircraft_a, rabbitmq, "Publica e consome eventos", "AMQP (Async)")
+Rel(aircraft_b, rabbitmq, "Publica e consome eventos", "AMQP (Async)")
+
+Rel(flight_ops_service, aircraft_a, "Agrega detalhes da aeronave (P2P)", "HTTPS/REST + JWT", $tags="sync")
 
 @enduml
