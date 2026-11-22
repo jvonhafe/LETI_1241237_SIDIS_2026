@@ -1,30 +1,32 @@
 @startuml c4_plus1_jwt_propagation
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Dynamic.puml
 
-title "C4 Dynamic Diagram: P2P Aggregation & JWT Propagation"
+title "C4 Dynamic Diagram: CQRS Local Read, P2P Aggregation & JWT Propagation"
 
 Person(admin, "Operador ATCC / Cliente")
 
-Container_Boundary(flight_ops, "Flight Operations Service (Porta 8083)") {
+Container_Boundary(flight_ops, "Flight Operations Service (:8083 / :8085)") {
     Component(filter, "JwtAuthenticationFilter", "Filtro de Segurança")
     Component(controller, "ScheduledFlightController", "Controlador REST")
+    Component(readRepo, "FlightReadModelRepository", "CQRS Read Model")
     Component(restTemplate, "RestTemplate", "Cliente HTTP P2P")
 }
 
 Container(aircraft, "Aircraft Service (8081)", "Microsserviço", "Requer JWT")
 Container(routes, "Airports & Routes (8082)", "Microsserviço", "Requer JWT")
 
-Rel_R(admin, filter, "1. GET /api/flights/{id} (Bearer JWT)")
-Rel_D(filter, controller, "2. Valida assinatura e aprova contexto")
-Rel_D(controller, restTemplate, "3. Inicia lógica de agregação P2P")
+Rel_R(admin, filter, "1. Pedido REST (Bearer JWT)")
+Rel_D(filter, controller, "2. Valida JWT e RBAC")
+Rel_D(controller, readRepo, "3. Lê dados sincronizados no Read Model local")
+Rel_D(controller, restTemplate, "4. Inicia agregação externa P2P")
 
-Rel_R(restTemplate, aircraft, "4. Pede Aeronave (Injeta Header JWT)")
-Rel_L(aircraft, restTemplate, "5. Devolve detalhes da aeronave")
+Rel_R(restTemplate, aircraft, "5. Pede aeronave (envia JWT)")
+Rel_L(aircraft, restTemplate, "6. Devolve dados da aeronave")
 
-Rel_R(restTemplate, routes, "6. Pede Rota (Injeta Header JWT)")
-Rel_L(routes, restTemplate, "7. Devolve detalhes da rota e aeroportos")
+Rel_R(restTemplate, routes, "7. Pede rota (envia JWT)")
+Rel_L(routes, restTemplate, "8. Devolve dados da rota")
 
-Rel_U(restTemplate, controller, "8. Compila dados parciais num DTO")
-Rel_U(controller, admin, "9. Devolve voo 100% completo (200 OK)")
+Rel_U(restTemplate, controller, "9. Junta dados no DTO")
+Rel_U(controller, admin, "10. Devolve resposta (200 OK)")
 
 @enduml

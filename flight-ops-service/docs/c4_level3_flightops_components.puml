@@ -1,32 +1,38 @@
 @startuml c4_level3_flightops_components
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
-title "C4 Level 3: Component Diagram - Flight Operations Service"
+title "C4 Level 3: Component Diagram - Flight Operations Service (CQRS)"
 
-Container_Boundary(flight_ops_service, "Flight Operations Service (Porta 8083)") {
-    Component(security_filter, "JwtAuthenticationFilter", "Spring Security", "Interceta pedidos REST, extrai o contexto JWT e protege os endpoints.")
-
-    Component(flight_controller, "ScheduledFlightController", "Spring REST Controller", "Expõe os endpoints para agendamento, agregação e gestão de voos.")
-
-    Component(rest_config, "RestTemplateConfig", "Spring @Configuration", "Configura e injeta o cliente HTTP preparado para repassar o cabeçalho Authorization.")
-
-    Component(flight_repo, "ScheduledFlightRepository", "Spring Data JPA", "Interface de abstração para persistência dos voos agendados na base de dados.")
+Container_Boundary(flight_ops_service, "Flight Operations Service (:8083 / :8085)") {
+    Component(security_filter, "JwtAuthenticationFilter", "Spring Security", "Valida JWT e aplica RBAC.")
+    Component(flight_controller, "ScheduledFlightController", "Spring REST Controller", "Expõe endpoints de comandos (POST/PUT/DELETE) e consultas (GET).")
+    Component(use_cases, "Flight Use Cases", "Application Layer", "Executa escrita, publica eventos e consulta leitura local.")
+    Component(rabbit_config, "RabbitMQConfig", "Spring @Configuration", "Configura FanoutExchange (flight.events.exchange) e fila exclusiva UUID.")
+    Component(event_listener, "FlightEventListener", "Spring @RabbitListener", "Consome FlightEvent e atualiza o Read Model local.")
+    Component(rest_config, "RestTemplateConfig", "Spring @Configuration", "Cliente HTTP para agregação P2P com JWT.")
+    Component(write_repo, "ScheduledFlightRepository", "Spring Data JPA", "Persistência do Write Model.")
+    Component(read_repo, "FlightReadModelRepository", "Spring Data JPA", "Persistência do Read Model local.")
 }
 
 Person(admin, "Cliente (Admin/ATCC)", "Inicia o pedido")
+Container(rabbitmq, "RabbitMQ Broker", "AMQP", "FanoutExchange + Filas UUID")
 Container(aircraft_service, "Aircraft Service", "Microsserviço", "Alvo P2P")
 Container(airport_routes, "Airports & Routes Service", "Microsserviço", "Alvo P2P")
-ContainerDb(db, "Flight Ops Database", "Relational DB", "Estado guardado")
+ContainerDb(db, "Flight Ops H2 DB", "H2 In-Memory", "Base de dados isolada da instância")
 
-Rel(admin, security_filter, "POST /api/flights", "REST/JWT")
-Rel(security_filter, flight_controller, "Repassa pedido validado")
-
-Rel(flight_controller, rest_config, "Usa RestTemplate para Forwarding P2P")
-Rel(flight_controller, flight_repo, "Lê/Escreve")
-
-Rel(rest_config, aircraft_service, "Agrega dados da aeronave", "REST/JWT")
-Rel(rest_config, airport_routes, "Agrega dados da rota", "REST/JWT")
-
-Rel(flight_repo, db, "Lê e Escreve", "JDBC")
+Rel(admin, security_filter, "Pedidos REST", "HTTPS/JWT")
+Rel(security_filter, flight_controller, "Pedido autenticado")
+Rel(flight_controller, use_cases, "Comandos e consultas")
+Rel(use_cases, write_repo, "Grava/Atualiza/Apaga")
+Rel(use_cases, read_repo, "Atualiza/Lê Read Model")
+Rel(use_cases, rabbitmq, "Publica FlightEvent", "AMQP")
+Rel(rabbitmq, event_listener, "Entrega FlightEvent", "AMQP")
+Rel(event_listener, read_repo, "Sincroniza Read Model")
+Rel(rabbit_config, rabbitmq, "Declara Exchange e Queue")
+Rel(use_cases, rest_config, "Agregação externa")
+Rel(rest_config, aircraft_service, "Consulta frota", "HTTPS/JWT")
+Rel(rest_config, airport_routes, "Consulta rotas", "HTTPS/JWT")
+Rel(write_repo, db, "JDBC")
+Rel(read_repo, db, "JDBC")
 
 @enduml

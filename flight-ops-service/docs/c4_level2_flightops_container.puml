@@ -1,23 +1,35 @@
 @startuml c4_level2_flightops_container
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
-title "C4 Level 2: Container Diagram - Flight Operations Service"
+title "C4 Level 2: Container Diagram - Flight Operations Service (CQRS + RabbitMQ)"
 
 Person(admin, "Operador ATCC / Admin", "Agenda, cancela e monitoriza operações de voo.")
 
 System_Boundary(aisafe, "AISafe Distributed System") {
-    Container(flight_ops_service, "Flight Operations Service", "Java, Spring Boot", "Orquestrador principal. Gere agendamento de voos e agrega dados externos (P2P Forwarding).")
+    Container(flight_ops_a, "Flight Ops Service (:8083)", "Java, Spring Boot", "Expõe API REST, publica/consome FlightEvents e agrega dados externos.")
+    ContainerDb(flight_db_a, "Flight Ops DB (:8083)", "H2 In-Memory", "Base de dados isolada (Write & Read Models) da instância 8083.")
 
-    Container(aircraft_service, "Aircraft & Maintenance Service", "Java, Spring Boot", "Fornece dados operacionais da frota. Requer JWT válido.")
-    Container(airport_routes_service, "Airports & Routes Service", "Java, Spring Boot", "Fornece catálogo de rotas e aeroportos. Requer JWT válido.")
+    Container(flight_ops_b, "Flight Ops Service (:8085)", "Java, Spring Boot", "Segunda instância com Write/Read Models locais sincronizados via RabbitMQ.")
+    ContainerDb(flight_db_b, "Flight Ops DB (:8085)", "H2 In-Memory", "Base de dados isolada (Write & Read Models) da instância 8085.")
 
-    ContainerDb(flight_db, "Flight Ops Database", "H2 / PostgreSQL", "Armazena exclusivamente a agenda de voos e estados operacionais.")
+    Container(rabbitmq, "RabbitMQ Broker", "AMQP :5672", "FanoutExchange (flight.events.exchange) e filas exclusivas por instância.")
+
+    Container(aircraft_service, "Aircraft & Maintenance Service", "Java, Spring Boot (:8081)", "Fornece dados operacionais da frota. Requer JWT válido.")
+    Container(airport_routes_service, "Airports & Routes Service", "Java, Spring Boot (:8082)", "Fornece catálogo de rotas e aeroportos. Requer JWT válido.")
 }
 
-Rel(admin, flight_ops_service, "Gere operações de voo", "HTTPS/REST")
+Rel(admin, flight_ops_a, "Gere e consulta voos", "HTTPS/REST + JWT")
+Rel(admin, flight_ops_b, "Gere e consulta voos", "HTTPS/REST + JWT")
 
-Rel(flight_ops_service, aircraft_service, "Valida aeronave e agrega detalhes (P2P)", "HTTPS/REST + JWT", $tags="sync")
-Rel(flight_ops_service, airport_routes_service, "Valida rota e aeroportos (P2P)", "HTTPS/REST + JWT", $tags="sync")
-Rel(flight_ops_service, flight_db, "Lê e escreve agenda", "JDBC")
+Rel(flight_ops_a, flight_db_a, "Lê e escreve", "JDBC")
+Rel(flight_ops_b, flight_db_b, "Lê e escreve", "JDBC")
+
+Rel(flight_ops_a, rabbitmq, "Publica e consome FlightEvent", "AMQP")
+Rel(flight_ops_b, rabbitmq, "Publica e consome FlightEvent", "AMQP")
+
+Rel(flight_ops_a, aircraft_service, "Valida aeronave e agrega detalhes", "HTTPS/REST + JWT", $tags="sync")
+Rel(flight_ops_a, airport_routes_service, "Valida rota e aeroportos", "HTTPS/REST + JWT", $tags="sync")
+Rel(flight_ops_b, aircraft_service, "Valida aeronave e agrega detalhes", "HTTPS/REST + JWT", $tags="sync")
+Rel(flight_ops_b, airport_routes_service, "Valida rota e aeroportos", "HTTPS/REST + JWT", $tags="sync")
 
 @enduml
